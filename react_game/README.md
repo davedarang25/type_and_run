@@ -1,32 +1,27 @@
-# React + TypeScript + Vite
+# Type-to-Run — React client
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React 18 + TypeScript, **Zustand**, Tailwind v4, Vite. See the [root README](../README.md) for the game design, state machine and database.
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev          # offline mode at http://localhost:5173 (no .env needed)
+npm test             # engine + full game-flow tests (vitest)
+npm run test:db      # ../supabase migration + seed + RPCs against an in-process Postgres (PGlite)
+npm run content      # regenerate ../supabase/seed.sql and ../flutter/lib/data/seed.g.dart from src/data/seed.ts
+npm run build        # production build → dist/
+npm run build:demo   # single self-contained HTML → dist-demo/index.html (always offline)
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Copy `.env.example` to `.env` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` to use Supabase. A sign-in screen appears, and a database trigger creates the `users` row on sign-up.
+
+```
+src/
+  types/db.ts               row types for all 10 tables
+  data/seed.ts              ★ game content (single source of truth for both clients)
+  engine/                   pure rules: typing, wordGenerator, ghostAI, ritual, rng
+  store/gameEngine.ts       GameEngineState (Zustand vanilla store, injectable repo/rng/clock)
+  repositories/             interfaces + Supabase and offline (localStorage) implementations
+  components/ screens/      UI
+  __tests__/                engine + game-flow tests
+scripts/                    content generator, embedded-Postgres DB test
+```

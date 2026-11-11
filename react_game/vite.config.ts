@@ -1,7 +1,11 @@
-import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import { viteSingleFile } from 'vite-plugin-singlefile';
 
-// https://vite.dev/config/
-export default defineConfig({
-  plugins: [react()],
-})
+// `npm run build:demo` produces one self-contained HTML file (offline mode).
+export default defineConfig(({ mode }) => ({
+  plugins: [react(), tailwindcss(), ...(mode === 'demo' ? [viteSingleFile()] : [])],
+  build: { outDir: mode === 'demo' ? 'dist-demo' : 'dist' },
+  test: { environment: 'node' },
+}));

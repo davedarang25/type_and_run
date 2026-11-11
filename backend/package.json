@@ -1,23 +1,27 @@
 {
-  "name": "backend",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "type-and-run-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Type-to-Run REST API (Express + MySQL) shared by react_game and flutter_game",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "db:reset": "node scripts/resetDb.js",
+    "test": "node --test --test-concurrency=1 tests/api.test.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.6",
-    "dotenv": "^18.0.10",
-    "express": "^5.3.0",
-    "pg": "^8.23.1",
-    "sqlite3": "^6.0.1"
+    "dotenv": "^16.6.1",
+    "express": "^4.22.3",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.24.6"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "supertest": "^7.3.2"
   }
 }
