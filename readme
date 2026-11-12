@@ -1,0 +1,136 @@
+# Type-to-Run
+
+A horror-exploration typing game. You're a paranormal live-streamer: every step, hiding spot, item pickup and line of the exorcism is typed. Typos and slow input draw the ghosts closer.
+
+```
+type_and_run/
+  backend/        Express + MySQL REST API (server.js, routes/{user,game,ghost}Routes.js, controllers/gameController.js)
+  react_game/     React + TypeScript + Zustand + Tailwind (web)
+  flutter_game/   Flutter + Riverpod (Android, iOS, Web, Windows, macOS, Linux)
+  .github/workflows/ci.yml   tests all three on every push
+```
+
+```
+ react_game ──┐                                  ┌── 10 tables (schema.sql)
+              ├── HTTPS + JWT ──▶ backend (Express) ──▶ MySQL / MariaDB
+ flutter_game ┘     /api/...                     └── game content (seed.sql)
+```
+
+| | `react_game/` | `flutter_game/` |
+|---|---|---|
+| State (`GameEngineState`) | **Zustand** store | **Riverpod** `Notifier` |
+| Talks to backend via | `fetch` (`src/repositories/apiRepository.ts`) | `package:http` (`lib/repositories/api_repository.dart`) |
+| Login token kept in | `localStorage` | `shared_preferences` |
+| Offline mode (no API URL) | bundled content + `localStorage` | bundled content + `shared_preferences` |
+| Tests | Vitest: engine + full game flow | engine + game flow + API client (recorded backend responses) + app smoke test |
+
+A player who signs in to both games with the same account shares progress and inventory, because both read and write through the same API.
+
+## Quick start
+
+```bash
+# 1. Backend (needs MySQL or MariaDB running, e.g. XAMPP)
+cd backend
+cp .env.example .env            # DB_USER / DB_PASSWORD / JWT_SECRET
+npm install
+npm run db:reset                # creates the database, 10 tables, and the game content
+npm run dev                     # http://localhost:3000/api
+
+# 2. React game
+cd ../react_game
+cp .env.example .env            # VITE_API_URL=http://localhost:3000/api
+npm install && npm run dev      # http://localhost:5173
+
+# 3. Flutter game
+cd ../flutter_game
+flutter create . --project-name type_to_run    # first time only: platform folders (keeps lib/ and test/)
+flutter pub get
+flutter run -d chrome --web-port 8080 --dart-define=API_URL=http://localhost:3000/api
+#   Android emulator: --dart-define=API_URL=http://10.0.2.2:3000/api
+```
+
+If you leave out the API URL, either game runs **offline** with the bundled content. That's handy for demos.
+
+Each folder has its own README: [backend](backend/README.md) (API reference, transaction rules), [react_game](react_game/README.md), [flutter_game](flutter_game/README.md).
+
+## Keeping the two games in sync
+
+| Layer | react_game | flutter_game |
+|---|---|---|
+| Row types (10 tables) | `src/types/db.ts` | `lib/models/db.dart` |
+| Typing engine | `src/engine/typing.ts` | `lib/engine/typing.dart` |
+| Word generator | `src/engine/wordGenerator.ts` | `lib/engine/word_generator.dart` |
+| Ghost AI & chases | `src/engine/ghostAI.ts` | `lib/engine/ghost_ai.dart` |
+| Inventory & ritual | `src/engine/ritual.ts` | `lib/engine/ritual.dart` |
+| `GameEngineState` state machine | `src/store/gameEngine.ts` | `lib/state/game_engine.dart` |
+| API client | `src/repositories/apiRepository.ts` | `lib/repositories/api_repository.dart` |
+| Offline save rules | `src/repositories/rules.ts` | `lib/repositories/rules.dart` |
+
+Server-side, the same save rules live in `backend/services/gameRules.js`.
+
+Game content is generated from one file, so it can't drift between the backend and the two games. The rules are hand-ported, and the test suites cover the same cases. If you change a constant in one `engine/` folder, change it in the other too.
+
+## State machine (spec §2)
+
+```mermaid
+stateDiagram-v2
+  [*] --> menu
+  menu --> exploring: selectPlace (POST /game/places/:id/start)
+  exploring --> exploring: typo / timeout → ghost closer
+  exploring --> chase: correct move + encounter roll
+  chase --> exploring: escapes done
+  exploring --> pickup: correct move + item roll
+  pickup --> exploring
+  exploring --> decision: room finished
+  decision --> exploring: "deeper"
+  decision --> ritualPrompt: "wrap up"
+  ritualPrompt --> results: "go home" (extracted)
+  ritualPrompt --> exorcism: "ritual" + requirements met
+  ritualPrompt --> insufficient: requirements not met
+  insufficient --> exploring: "keep looking"
+  insufficient --> results: "go home"
+  exorcism --> results: rite complete (exorcised)
+  exploring --> gameover: proximity ≥ 100 (caught)
+  chase --> gameover
+  exorcism --> gameover
+```
+
+| Flowchart node | Function (same name in both games) |
+|---|---|
+| Generate Typing Command | `wordPrompt` → `pickWord` + `timeLimitMs` |
+| Typing Penalty | typo branch of `pressKey`: −600 ms from the deadline, logged as inaccuracy |
+| Ghost Gets Closer / Caught? | `ghostGetsCloser` → `penaltyAdvance`, `isCaught` |
+| Execute Movement | `onMove` |
+| Ghost Encounter? / Ghost AI | `rollEncounter`, `startChase`; chases use `hide` words with 20% less time |
+| Found Ritual Item? / Collect Item | `rollItemFind` → an `interact` word to pick it up → `onPickup` |
+| Continue Exploring? | `decision` phase after every room (3 moves): type `deeper` / `wrap up` |
+| Perform Ritual? / Check Required Items | `ritualPrompt` → `checkRequirements(requiredItems(...))` |
+| Exorcism | `exorcism` phase: chant 3/4/5 `exorcise` phrases (easy/medium/hard) |
+| Save Results | `finish` → `saveSessionResults` → `POST /api/game/places/:id/results` |
+
+## Game rules (tunable constants)
+
+- **Proximity meter** 0–100. Reaching 100 means you're caught. A typo adds `(2 + speed×0.6) × hostility × behavior`. A timeout adds 2.5× that, and anything during a chase or rite adds 1.5× more. Each safe move removes 4.
+- **Encounters:** `spawn_chance` is the chance per *room*, split across its 3 steps. The odds rise with depth (+15%/room) and proximity, and the behavior changes how much proximity matters. Bosses rarely appear in room 1. After an escape you get 3 grace steps.
+- **Behaviors:** `stalker` gets likelier the closer it already is. `aggressive` lunges hard and takes 4+ escapes to shake. `patrol` is predictable and forgiving.
+- **Hostility** (`low/medium/high/extreme` → ×0.75/1/1.3/1.6) scales penalties, lunges and encounter odds.
+- **Items:** each safe move has a 30% chance of finding something, weighted by what's left in `PLACE_ITEM_SPAWNS`. Items found in a run are **banked to `USER_INVENTORY` only if you leave alive**, which is the risk/reward of exploring deeper. The ritual can use items from earlier runs too.
+- **Ritual target:** the place's boss ghost(s), or every ghost if there's no boss.
+
+## Database (MySQL)
+
+`backend/database/schema.sql` creates all 10 spec tables. They use `INT AUTO_INCREMENT` keys, InnoDB foreign keys, `UNIQUE` on every junction pair, and `CHECK` constraints on every enum-like column. `users.password` holds a bcrypt hash.
+
+`haunted_places.is_unlocked` means "unlocked for every new player". Per-player unlocks are rows in `user_place_progress`, and clearing a place unlocks the next `place_id`.
+
+All writes go through the API. "Save Results" runs as one transaction in `services/gameRules.js`, and the ritual requirements are re-checked on the server. See [backend/README.md](backend/README.md) for the endpoints.
+
+## Adding content
+
+All content lives in `react_game/src/data/seed.ts`. To add a place, add its rows there: the place, its `PLACE_GHOSTS` and `PLACE_ITEM_SPAWNS`, and any new ghosts with their `GHOST_REQUIRED_ITEMS`. Then run:
+
+```bash
+cd react_game && npm run content   # regenerates backend/database/seed.sql AND flutter_game/lib/data/seed.g.dart
+```
+
+Each place has to spawn at least the items its own ritual needs. A test in both games enforces this. Reload the database afterwards with `npm run db:reset` in `backend/`.
