@@ -1,5 +1,5 @@
 -- =============================================================================
--- Type-to-Run · MySQL 8.0.16+ / MariaDB 10.4+ schema (the 10 tables from the spec)
+-- Type-to-Run · MySQL 8.0.16+ / MariaDB 10.4+ schema (the 11 tables from the spec)
 -- =============================================================================
 -- Run with: npm run db:reset   (drops and recreates everything, then loads seed.sql)
 -- Notes:
@@ -11,7 +11,7 @@
 -- =============================================================================
 
 SET FOREIGN_KEY_CHECKS = 0;
-DROP TABLE IF EXISTS user_inventory, user_place_progress, place_item_spawns, ghost_required_items,
+DROP TABLE IF EXISTS game_sessions, user_inventory, user_place_progress, place_item_spawns, ghost_required_items,
   place_ghosts, items, haunted_places, ghost_type, word_bank, users;
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -151,10 +151,10 @@ CREATE TABLE user_place_progress (
 
 -- 10. USER_INVENTORY  (USERS owns ITEMS) --------------------------------------
 CREATE TABLE user_inventory (
-  inventory_id INT NOT NULL AUTO_INCREMENT,
-  user_id      INT NOT NULL,
-  item_id      INT NOT NULL,
-  quantity     INT NOT NULL,
+  inventory_id          INT          NOT NULL AUTO_INCREMENT,
+  user_id               INT          NOT NULL,
+  item_id               INT          NOT NULL,
+  quantity              INT          NOT NULL,
   PRIMARY KEY (inventory_id),
   UNIQUE KEY user_inventory_pair_uq (user_id, item_id),
   KEY user_inventory_item_idx (item_id),
@@ -162,3 +162,47 @@ CREATE TABLE user_inventory (
   CONSTRAINT ui_item_fk FOREIGN KEY (item_id) REFERENCES items (item_id) ON DELETE RESTRICT,
   CONSTRAINT ui_quantity_ck CHECK (quantity >= 0)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+
+-- 11. GAME_SESSIONS ------------------------------------------------------------
+
+CREATE TABLE game_sessions (
+    session_id INT NOT NULL AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    place_id INT NOT NULL,
+    outcome VARCHAR(12) NOT NULL,
+    wpm DECIMAL(6,2) NOT NULL,
+    accuracy DECIMAL(5,2) NOT NULL,
+    playtime_seconds INT NOT NULL DEFAULT 0,
+    played_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (session_id),
+
+    KEY game_sessions_user_date_idx (user_id, played_at),
+    KEY game_sessions_place_date_idx (place_id, played_at),
+
+    CONSTRAINT gs_user_fk
+        FOREIGN KEY (user_id)
+        REFERENCES users(user_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT gs_place_fk
+        FOREIGN KEY (place_id)
+        REFERENCES haunted_places(place_id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT gs_outcome_ck
+        CHECK (outcome IN ('extracted', 'exorcised', 'caught')),
+
+    CONSTRAINT gs_wpm_ck
+        CHECK (wpm BETWEEN 0 AND 400),
+
+    CONSTRAINT gs_accuracy_ck
+        CHECK (accuracy BETWEEN 0 AND 100),
+
+    CONSTRAINT gs_playtime_ck
+        CHECK (playtime_seconds >= 0)
+
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;

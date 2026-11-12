@@ -80,6 +80,21 @@ async function saveSessionResults(conn, userId, placeId, body) {
   const input = validateResults(body);
   await assertPlaceUnlocked(conn, userId, placeId);
 
+  // Record this gameplay session.
+  await conn.query(
+    `INSERT INTO game_sessions
+      (user_id, place_id, outcome, wpm, accuracy, playtime_seconds)
+    VALUES (?, ?, ?, ?, ?, ?)`,
+    [
+      userId,
+      placeId,
+      input.outcome,
+      input.wpm,
+      input.accuracy,
+      input.playtimeSeconds
+    ]
+  );
+
   // Locks this player's row, so two saves from the same player run one after the other.
   await conn.query('UPDATE users SET total_playtime = total_playtime + ? WHERE user_id = ?', [input.playtimeSeconds, userId]);
   await conn.query(
