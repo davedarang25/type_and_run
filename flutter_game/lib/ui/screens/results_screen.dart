@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../repositories/game_repository.dart';
 import '../../state/game_engine.dart';
 import '../theme.dart';
-import '../widgets/typing_input.dart';
 import '../widgets/typing_prompt.dart';
 
 class ResultsScreen extends ConsumerWidget {
@@ -30,9 +29,7 @@ class ResultsScreen extends ConsumerWidget {
     final mins = r.durationSec ~/ 60;
     final secs = (r.durationSec % 60).toString().padLeft(2, '0');
 
-    return TypingInput(
-      onChar: engine.pressKey,
-      child: Center(
+    return Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: ConstrainedBox(
@@ -61,8 +58,7 @@ class ResultsScreen extends ConsumerWidget {
             ]),
           ),
         ),
-      ),
-    );
+      );
   }
 }
 

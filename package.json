@@ -1,0 +1,14 @@
+{
+  "name": "type-and-run",
+  "private": true,
+  "description": "Runs the backend and the React game together. Flutter: see flutter_game/README.md",
+  "scripts": {
+    "setup": "npm --prefix backend install && npm --prefix react_game install",
+    "db:reset": "npm --prefix backend run db:reset",
+    "dev": "concurrently -k -n api,react -c magenta,cyan \"npm --prefix backend run dev\" \"npm --prefix react_game run dev\"",
+    "test": "npm --prefix backend test && npm --prefix react_game test"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.5"
+  }
+}

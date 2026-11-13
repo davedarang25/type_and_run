@@ -1,5 +1,5 @@
-// Row types mirroring supabase/migrations/001_schema.sql (one class per table)
-// plus the composite view models the engine uses. Same shapes as react/src/types/db.ts.
+// Row types mirroring backend/database/schema.sql (one class per table)
+// plus the composite view models the engine uses. Same shapes as react_game/src/types/db.ts.
 
 enum Difficulty { easy, medium, hard }
 
@@ -297,6 +297,10 @@ class PlaceGhost extends GhostType {
   });
   final int spawnChance;
   final bool isBoss;
+
+  /// A row from GET /api/places/:id/content → ghosts (ghost_type columns + spawn_chance + is_boss).
+  factory PlaceGhost.fromJson(Map<String, dynamic> j) =>
+      PlaceGhost.from(GhostType.fromJson(j), spawnChance: j['spawn_chance'] as int, isBoss: j['is_boss'] as bool);
 
   factory PlaceGhost.from(GhostType g, {required int spawnChance, required bool isBoss}) => PlaceGhost(
         ghostId: g.ghostId,

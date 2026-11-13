@@ -11,6 +11,7 @@ import 'rules.dart';
 abstract class KeyValueStore {
   String? read(String key);
   Future<void> write(String key, String value);
+  Future<void> remove(String key);
 }
 
 class MemoryStore implements KeyValueStore {
@@ -19,6 +20,8 @@ class MemoryStore implements KeyValueStore {
   String? read(String key) => _m[key];
   @override
   Future<void> write(String key, String value) async => _m[key] = value;
+  @override
+  Future<void> remove(String key) async => _m.remove(key);
 }
 
 PlaceContent buildPlaceContent(int placeId) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../repositories/api_repository.dart';
 import '../../repositories/game_repository.dart';
 import '../../repositories/local_repository.dart';
 import '../../state/game_engine.dart';
@@ -67,10 +68,18 @@ class MenuScreen extends ConsumerWidget {
             Row(children: [
               Expanded(
                 child: Text(
-                  repo.mode == 'local' ? 'Offline mode — progress saved on this device.' : 'Connected to Supabase.',
+                  repo.mode == 'local' ? 'Offline mode — progress saved on this device.' : 'Online — progress saved to your account.',
                   style: mono(size: 11, color: Palette.dim),
                 ),
               ),
+              if (repo is ApiRepository)
+                TextButton(
+                  onPressed: () async {
+                    await repo.logout();
+                    await ref.read(gameEngineProvider.notifier).init();
+                  },
+                  child: Text('sign out', style: mono(size: 11, color: Palette.dim)),
+                ),
               if (repo is LocalRepository)
                 TextButton(
                   onPressed: () async {

@@ -1,11 +1,11 @@
-import { supabase } from '../lib/supabase.ts';
+import { ApiClient, apiBaseUrl } from '../lib/api.ts';
+import { ApiRepository } from './apiRepository.ts';
 import { LocalRepository } from './localRepository.ts';
-import { SupabaseRepository } from './supabaseRepository.ts';
 import type { GameRepository } from './types.ts';
 
-/** Supabase when VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY are set, offline otherwise. */
+/** The Express API by default; offline (localStorage) only with VITE_OFFLINE=true or the demo build. */
 export function createRepository(): GameRepository {
-  return supabase ? new SupabaseRepository(supabase) : new LocalRepository();
+  return apiBaseUrl ? new ApiRepository(new ApiClient(apiBaseUrl)) : new LocalRepository();
 }
 
 export type * from './types.ts';

@@ -1,5 +1,5 @@
-// Inventory & ritual rules. Pure. Mirrors react/src/engine/ritual.ts and
-// place_ritual_requirements() in SQL.
+// Inventory & ritual rules. Pure. Mirrors react_game/src/engine/ritual.ts and
+// ritualRequirements() in backend/services/gameRules.js.
 import 'dart:math';
 
 import '../models/db.dart';

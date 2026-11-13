@@ -4,26 +4,10 @@ import { MenuScreen } from './screens/MenuScreen.tsx';
 import { RunScreen } from './screens/RunScreen.tsx';
 import { ResultsScreen } from './screens/ResultsScreen.tsx';
 import { AuthScreen } from './screens/AuthScreen.tsx';
+import { TypingCapture } from './components/TypingCapture.tsx';
 
-const TYPING_PHASES = new Set(['exploring', 'decision', 'ritualPrompt', 'insufficient', 'exorcism', 'results', 'gameover']);
-
-export default function App() {
+function Screen() {
   const phase = useGame((s) => s.phase);
-
-  useEffect(() => { void gameStore.getState().init(); }, []);
-
-  // Global keyboard capture: the whole game is typed.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.ctrlKey || e.metaKey || e.altKey || e.key.length !== 1) return;
-      if (!TYPING_PHASES.has(gameStore.getState().phase)) return;
-      e.preventDefault(); // stop space from scrolling, etc.
-      gameStore.getState().pressKey(e.key);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
-
   switch (phase) {
     case 'boot':
     case 'loading':
@@ -38,4 +22,15 @@ export default function App() {
     default:
       return <RunScreen />;
   }
+}
+
+export default function App() {
+  useEffect(() => { void gameStore.getState().init(); }, []);
+  return (
+    <>
+      {/* Mounted once for the whole app, so keyboard input survives screen changes between runs. */}
+      <TypingCapture />
+      <Screen />
+    </>
+  );
 }

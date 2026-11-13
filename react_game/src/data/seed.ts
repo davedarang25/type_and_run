@@ -1,6 +1,6 @@
 // Single source of truth for game content.
 // - LocalRepository (offline mode) reads it directly.
-// - scripts/gen-seed-sql.ts turns it into supabase/seed.sql.
+// - scripts/gen-content.ts turns it into backend/database/seed.sql and flutter_game/lib/data/seed.g.dart.
 import type {
   ActionType,
   Difficulty,

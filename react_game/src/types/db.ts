@@ -1,4 +1,4 @@
-// Row types mirroring supabase/migrations/001_schema.sql (one interface per table).
+// Row types mirroring backend/database/schema.sql (one interface per table).
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 export type ActionType = 'movement' | 'hide' | 'interact' | 'exorcise';
@@ -9,7 +9,6 @@ export type ProgressStatus = 'unlocked' | 'in_progress' | 'cleared';
 
 export interface UserRow {
   user_id: number;
-  auth_id?: string | null;
   username: string;
   email: string;
   password?: string | null;

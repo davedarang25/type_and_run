@@ -34,6 +34,7 @@ class _CameraFeedState extends State<CameraFeed> with TickerProviderStateMixin {
   final _rand = Random();
   double _flicker = 1;
   Timer? _flickerTimer;
+  Timer? _restoreTimer;
 
   @override
   void initState() {
@@ -47,7 +48,7 @@ class _CameraFeedState extends State<CameraFeed> with TickerProviderStateMixin {
     _flickerTimer = Timer(wait, () {
       if (!mounted) return;
       setState(() => _flicker = 0.4 + _rand.nextDouble() * 0.3);
-      Timer(const Duration(milliseconds: 60), () {
+      _restoreTimer = Timer(const Duration(milliseconds: 60), () {
         if (mounted) setState(() => _flicker = 1);
       });
       _scheduleFlicker();
@@ -57,6 +58,7 @@ class _CameraFeedState extends State<CameraFeed> with TickerProviderStateMixin {
   @override
   void dispose() {
     _flickerTimer?.cancel();
+    _restoreTimer?.cancel();
     _pulse.dispose();
     _drift.dispose();
     super.dispose();

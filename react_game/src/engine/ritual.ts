@@ -1,4 +1,4 @@
-// Inventory & ritual rules. Pure. Mirrors place_ritual_requirements() in SQL.
+// Inventory & ritual rules. Pure. Mirrors ritualRequirements() in backend/services/gameRules.js.
 import type { ItemQuantities, PlaceContent, PlaceGhost, PlaceItemSpawnRow } from '../types/db.ts';
 import { pickWeighted, type Rng } from './rng.ts';
 

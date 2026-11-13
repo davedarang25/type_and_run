@@ -145,3 +145,12 @@ test('validation and isolation', async () => {
   const theirs = await api.get('/api/users/me/inventory').set('Authorization', `Bearer ${other.body.token}`);
   assert.deepEqual(theirs.body, [], "another player's inventory is not visible");
 });
+
+test('CORS: local dev origins on any port are allowed, others are not', async () => {
+  for (const origin of ['http://localhost:5173', 'http://localhost:61234', 'http://192.168.1.20:5173']) {
+    const res = await api.get('/api/health').set('Origin', origin);
+    assert.equal(res.headers['access-control-allow-origin'], origin);
+  }
+  const blocked = await api.get('/api/health').set('Origin', 'https://evil.example.com');
+  assert.equal(blocked.headers['access-control-allow-origin'], undefined);
+});

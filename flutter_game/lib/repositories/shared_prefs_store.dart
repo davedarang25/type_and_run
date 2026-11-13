@@ -14,4 +14,7 @@ class SharedPrefsStore implements KeyValueStore {
 
   @override
   Future<void> write(String key, String value) => _prefs.setString(key, value);
+
+  @override
+  Future<void> remove(String key) => _prefs.remove(key);
 }

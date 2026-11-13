@@ -1,0 +1,11 @@
+{
+ "token": "TEST_TOKEN",
+ "user": {
+  "user_id": 1,
+  "username": "dave",
+  "email": "dave@example.com",
+  "created_at": "2026-11-11T13:41:05.000Z",
+  "total_playtime": 3,
+  "total_locations_completed": 1
+ }
+}

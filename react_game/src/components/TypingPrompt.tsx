@@ -55,6 +55,7 @@ export function TypingPrompt({ prompt, buffer, typoAt }: { prompt: Prompt; buffe
           return (
             <button
               key={c.word}
+              onMouseDown={(e) => e.preventDefault() /* keep keyboard focus on the game */}
               onClick={() => gameStore.getState().choose(c.action)}
               className={`group min-w-52 rounded-md border px-5 py-4 text-left transition
                 ${isActive ? 'border-ecto/70 bg-ecto/5' : 'border-bone/15 bg-ash/80 hover:border-bone/40'}`}

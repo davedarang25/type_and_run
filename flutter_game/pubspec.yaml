@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_riverpod: ^2.6.1
-  supabase_flutter: ^2.8.0
+  http: ^1.2.2
   shared_preferences: ^2.3.0
 
 dev_dependencies:

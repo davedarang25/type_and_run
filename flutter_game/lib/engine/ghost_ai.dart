@@ -1,5 +1,5 @@
 // Ghost AI: proximity meter (0 = safe, 100 = caught), encounters and chases.
-// Pure. Mirrors react/src/engine/ghostAI.ts — keep the numbers in sync.
+// Pure. Mirrors react_game/src/engine/ghostAI.ts — keep the numbers in sync.
 import 'dart:math';
 
 import '../models/db.dart';

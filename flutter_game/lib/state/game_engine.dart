@@ -1,5 +1,5 @@
 // Central GameEngineState — a Riverpod Notifier implementing the spec's state machine.
-// Line-for-line port of react/src/store/gameEngine.ts:
+// Line-for-line port of react_game/src/store/gameEngine.ts:
 //
 //   menu → loading → exploring ⇄ (chase) → decision → ritualPrompt → exorcism → results
 //                         │                                  └→ insufficient → exploring
@@ -20,7 +20,7 @@ import '../repositories/game_repository.dart';
 
 // ------------------------------------------------------------------ providers
 
-/// Overridden in main.dart (Supabase or offline) and in tests.
+/// Overridden in main.dart (Express API or offline) and in tests.
 final repositoryProvider = Provider<GameRepository>((ref) => throw UnimplementedError('repositoryProvider not overridden'));
 final rngProvider = Provider<Rng>((ref) => Random().nextDouble);
 final clockProvider = Provider<int Function()>((ref) => () => DateTime.now().millisecondsSinceEpoch);

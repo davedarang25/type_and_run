@@ -1,4 +1,4 @@
-// Typing engine: keystroke matching + WPM / accuracy. Pure. Mirrors react/src/engine/typing.ts.
+// Typing engine: keystroke matching + WPM / accuracy. Pure. Mirrors react_game/src/engine/typing.ts.
 
 enum KeyResultKind { progress, typo, complete }
 

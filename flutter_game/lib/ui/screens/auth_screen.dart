@@ -1,8 +1,8 @@
-// Only shown when Supabase is configured and nobody is signed in.
+// Shown in online mode when nobody is signed in. Talks to POST /api/auth/login|register.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../repositories/api_repository.dart';
 import '../../state/game_engine.dart';
 import '../theme.dart';
 
@@ -29,28 +29,21 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Future<void> _submit() async {
+    final repo = ref.read(repositoryProvider);
+    if (repo is! ApiRepository) return;
     setState(() {
       _busy = true;
       _msg = null;
     });
-    final auth = Supabase.instance.client.auth;
     try {
       if (_signUp) {
-        final res = await auth.signUp(
-          email: _email.text.trim(),
-          password: _password.text,
-          data: {'username': _username.text.trim()},
-        );
-        if (res.session == null) {
-          setState(() => _msg = 'Check your email to confirm your account, then sign in.');
-          return;
-        }
+        await repo.register(_username.text.trim(), _email.text.trim(), _password.text);
       } else {
-        await auth.signInWithPassword(email: _email.text.trim(), password: _password.text);
+        await repo.login(_email.text.trim(), _password.text);
       }
       await ref.read(gameEngineProvider.notifier).init();
-    } on AuthException catch (e) {
-      setState(() => _msg = e.message);
+    } on ApiException catch (e) {
+      if (mounted) setState(() => _msg = e.message);
     } finally {
       if (mounted) setState(() => _busy = false);
     }

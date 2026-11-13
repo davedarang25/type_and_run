@@ -1,5 +1,5 @@
 // Drives the full state machine through the flowchart with a scripted RNG and clock.
-// Mirrors react/src/__tests__/gameFlow.test.ts.
+// Mirrors react_game/src/__tests__/gameFlow.test.ts.
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:type_to_run/models/db.dart';

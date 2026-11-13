@@ -1,5 +1,5 @@
-// Persistence rules shared by LocalRepository. Mirrors save_session_results() in SQL
-// so offline mode behaves exactly like the Supabase backend.
+// Persistence rules shared by LocalRepository. Mirrors saveSessionResults() in backend/services/gameRules.js
+// so offline mode behaves exactly like the online backend.
 import type { HauntedPlaceRow, ItemQuantities, PlaceContent, PlaceItemSpawnRow, UserPlaceProgressRow } from '../types/db.ts';
 import { addQuantities, checkRequirements, requiredItems, subtractQuantities } from '../engine/ritual.ts';
 import type { SessionResultInput } from './types.ts';

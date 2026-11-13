@@ -1,4 +1,4 @@
-// Mirrors react/src/__tests__/engine.test.ts — both clients must agree on the rules.
+// Mirrors react_game/src/__tests__/engine.test.ts — both clients must agree on the rules.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:type_to_run/data/seed.g.dart';
 import 'package:type_to_run/engine/ghost_ai.dart';

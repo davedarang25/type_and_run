@@ -1,5 +1,5 @@
-// Persistence rules for offline mode. Mirrors save_session_results() in SQL
-// (and react/src/repositories/rules.ts) so both backends behave identically.
+// Persistence rules for offline mode. Mirrors backend/services/gameRules.js
+// (and react_game/src/repositories/rules.ts) so both backends behave identically.
 import 'dart:math';
 
 import '../engine/ritual.dart';

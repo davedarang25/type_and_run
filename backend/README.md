@@ -5,7 +5,7 @@ The REST API that `react_game` and `flutter_game` both use. It owns all 10 table
 ## Setup (XAMPP / MySQL / MariaDB)
 
 ```bash
-cp .env.example .env        # set DB_USER / DB_PASSWORD (XAMPP: root / empty) and a JWT_SECRET
+cp .env.example .env        # DB_USER / DB_PASSWORD — Homebrew/XAMPP: root / empty · MAMP: root / root, DB_PORT=8889
 npm install
 npm run db:reset            # creates DB_NAME if missing, (re)creates the 10 tables, loads the game content
 npm run dev                 # http://localhost:3000/api  (restarts on file changes)
@@ -71,5 +71,7 @@ All bodies are JSON and responses use the database's snake_case column names. �
 - on the first clear, increments `total_locations_completed` and unlocks the next place
 
 If anything fails, nothing is saved. On `caught`, only the playtime is recorded and the items are lost.
+
+**CORS:** browsers on localhost or your local network (any port) are allowed by default, so both games work without setup. For a deployed site, list its URL in `CORS_ORIGIN` and set `CORS_ALLOW_LOCAL=false`.
 
 **Security notes:** passwords are bcrypt hashes and are never returned. Every player query is scoped to the token's user. Write endpoints validate their input. WPM and accuracy are computed on the client and range-checked here, so a modified client could still submit fake scores.

@@ -9,7 +9,6 @@ import '../widgets/camera_feed.dart';
 import '../widgets/panels.dart';
 import '../widgets/stream_header.dart';
 import '../widgets/timer_bar.dart';
-import '../widgets/typing_input.dart';
 import '../widgets/typing_prompt.dart';
 
 const _phaseText = {
@@ -122,9 +121,7 @@ class RunScreen extends ConsumerWidget {
       ]),
     );
 
-    return TypingInput(
-      onChar: engine.pressKey,
-      child: LayoutBuilder(builder: (context, c) {
+    return LayoutBuilder(builder: (context, c) {
         final wide = c.maxWidth >= 900;
         final header = StreamHeader(title: content.place.placeName, viewers: viewers, startedAt: s.sessionStartedAt, mode: repo.mode);
         return SingleChildScrollView(
@@ -142,7 +139,6 @@ class RunScreen extends ConsumerWidget {
             ),
           ),
         );
-      }),
-    );
+      });
   }
 }

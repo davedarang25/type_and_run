@@ -1,4 +1,4 @@
-// Repository contracts. Same shape as react/src/repositories/types.ts.
+// Repository contracts. Same shape as react_game/src/repositories/types.ts.
 import '../models/db.dart';
 
 enum SessionOutcome { extracted, exorcised, caught }
@@ -38,7 +38,7 @@ class SessionResultInput {
 
 /// Read-only content + USER_PLACE_PROGRESS + USER_INVENTORY.
 abstract class GameRepository {
-  /// 'supabase' or 'local'
+  /// 'api' (Express backend) or 'local' (offline)
   String get mode;
 
   Future<PlayerSummary?> getPlayer();

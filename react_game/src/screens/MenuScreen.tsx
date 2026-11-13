@@ -1,6 +1,7 @@
 import { gameStore, repository, useGame } from '../store/index.ts';
 import type { PlaceCard } from '../repositories/types.ts';
 import { LocalRepository } from '../repositories/localRepository.ts';
+import { ApiRepository } from '../repositories/apiRepository.ts';
 
 const DIFF: Record<string, string> = { easy: 'text-ecto border-ecto/30', medium: 'text-candle border-candle/30', hard: 'text-blood border-blood/30' };
 
@@ -9,7 +10,7 @@ function Card({ card }: { card: PlaceCard }) {
   return (
     <button
       disabled={!unlocked}
-      onClick={() => gameStore.getState().selectPlace(place.place_id)}
+      onClick={(e) => { e.currentTarget.blur(); void gameStore.getState().selectPlace(place.place_id); }}
       className={`group relative flex flex-col rounded-xl border p-5 text-left transition
         ${unlocked ? 'border-bone/15 bg-ash hover:-translate-y-0.5 hover:border-bone/40' : 'cursor-not-allowed border-bone/5 bg-ash/40 opacity-50'}`}
     >
@@ -32,6 +33,7 @@ function Card({ card }: { card: PlaceCard }) {
 
 export function MenuScreen() {
   const offline = repository instanceof LocalRepository ? repository : null;
+  const online = repository instanceof ApiRepository ? repository : null;
   const places = useGame((s) => s.places);
   const player = useGame((s) => s.player);
   const error = useGame((s) => s.error);
@@ -62,7 +64,15 @@ export function MenuScreen() {
         {places.map((c) => <Card key={c.place.place_id} card={c} />)}
       </div>
       <footer className="mt-10 flex items-center justify-between text-[11px] text-dim">
-        <span>{repository.mode === 'local' ? 'Offline mode — progress saved in this browser.' : 'Connected to Supabase.'}</span>
+        <span>{offline ? 'Offline mode — progress saved in this browser.' : 'Online — progress saved to your account.'}</span>
+        {online && (
+          <button
+            className="underline decoration-dotted hover:text-bone"
+            onClick={() => { online.logout(); void gameStore.getState().init(); }}
+          >
+            sign out
+          </button>
+        )}
         {offline && (
           <button
             className="underline decoration-dotted hover:text-bone"

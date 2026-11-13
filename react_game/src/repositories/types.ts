@@ -56,6 +56,6 @@ export interface InventoryRepository {
 }
 
 export interface GameRepository extends ContentRepository, ProgressRepository, InventoryRepository {
-  readonly mode: 'supabase' | 'local';
+  readonly mode: 'api' | 'local';
   getPlayer(): Promise<PlayerSummary | null>;
 }

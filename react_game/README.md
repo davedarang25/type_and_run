@@ -1,27 +1,27 @@
-# Type-to-Run — React client
+# Type-to-Run — React game
 
-React 18 + TypeScript, **Zustand**, Tailwind v4, Vite. See the [root README](../README.md) for the game design, state machine and database.
+React 18 + TypeScript, **Zustand**, Tailwind v4, Vite. See the [root README](../README.md) for the game design and the [backend README](../backend/README.md) for the API.
 
 ```bash
 npm install
-npm run dev          # offline mode at http://localhost:5173 (no .env needed)
-npm test             # engine + full game-flow tests (vitest)
-npm run test:db      # ../supabase migration + seed + RPCs against an in-process Postgres (PGlite)
-npm run content      # regenerate ../supabase/seed.sql and ../flutter/lib/data/seed.g.dart from src/data/seed.ts
-npm run build        # production build → dist/
-npm run build:demo   # single self-contained HTML → dist-demo/index.html (always offline)
+npm run dev            # http://localhost:5173. Connects to http://localhost:3000/api automatically
+npm test               # engine + full game-flow tests (vitest)
+npm run content        # regenerate ../backend/database/seed.sql and ../flutter_game/lib/data/seed.g.dart
+npm run build          # production build → dist/
+npm run build:demo     # single self-contained offline HTML → dist-demo/index.html
 ```
 
-Copy `.env.example` to `.env` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` to use Supabase. A sign-in screen appears, and a database trigger creates the `users` row on sign-up.
+The game connects to port 3000 on the same host that serves it, so it needs no configuration. Set `VITE_API_URL` in `.env` only if the backend runs somewhere else, or `VITE_OFFLINE=true` to play without one. The login token is kept in `localStorage`, and progress saves to your account in MySQL.
 
 ```
 src/
   types/db.ts               row types for all 10 tables
-  data/seed.ts              ★ game content (single source of truth for both clients)
+  data/seed.ts              ★ game content (source for the backend seed and the Flutter copy)
   engine/                   pure rules: typing, wordGenerator, ghostAI, ritual, rng
   store/gameEngine.ts       GameEngineState (Zustand vanilla store, injectable repo/rng/clock)
-  repositories/             interfaces + Supabase and offline (localStorage) implementations
+  lib/api.ts                fetch wrapper + token storage
+  repositories/             GameRepository interface; ApiRepository (backend) and LocalRepository (offline)
   components/ screens/      UI
   __tests__/                engine + game-flow tests
-scripts/                    content generator, embedded-Postgres DB test
+scripts/gen-content.ts      content generator
 ```
