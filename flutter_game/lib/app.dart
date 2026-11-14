@@ -46,7 +46,8 @@ class _TypeToRunAppState extends ConsumerState<TypeToRunApp> {
         body: SafeArea(
           // Mounted once for the whole app so keyboard focus survives screen changes between runs.
           child: TypingInput(
-            enabled: _typingPhases.contains(phase),
+            acceptKeys: _typingPhases.contains(phase),
+            holdFocus: phase != Phase.auth, // let the sign-in form have the keyboard
             focusTrigger: (phase, promptShownAt),
             onChar: ref.read(gameEngineProvider.notifier).pressKey,
             child: screen,

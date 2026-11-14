@@ -2,23 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
-/// Captures typing from hardware *and* on-screen keyboards for the whole app.
+/// Captures typing for the whole app — the Flutter twin of react_game's TypingCapture.
 ///
-/// Mounted ONCE above every screen (see app.dart), so the same hidden TextField and
-/// FocusNode survive menu → run → results → next run. Whenever [enabled] is true it
-/// grabs focus automatically: on every new [focusTrigger] (each prompt/phase), when
-/// the app comes back to the foreground, and whenever something else steals focus.
-/// That's what lets the next game accept letters immediately, without tapping.
+/// * Physical keyboards (macOS, Windows, Linux, web, tablets with keyboards):
+///   a global [HardwareKeyboard] handler reads every key press directly, no matter
+///   which widget has focus. Nothing to "wake up" after a restart or a new game.
+/// * On-screen keyboards (phones): a hidden TextField that stays mounted, enabled and
+///   focused for the whole session (never switched off between games), re-focused on
+///   every new prompt, when the app resumes, and whenever something steals focus.
+///
+/// Mounted ONCE above every screen in app.dart.
 class TypingInput extends StatefulWidget {
   const TypingInput({
     super.key,
-    required this.enabled,
+    required this.acceptKeys,
+    required this.holdFocus,
     required this.focusTrigger,
     required this.onChar,
     required this.child,
   });
 
-  final bool enabled;
+  /// A game prompt is on screen: forward keys to [onChar].
+  final bool acceptKeys;
+
+  /// Keep the hidden field focused (false only while a real form, e.g. sign-in, needs the keyboard).
+  final bool holdFocus;
 
   /// Any value that changes when a new prompt or phase appears.
   final Object focusTrigger;
@@ -35,10 +43,16 @@ class _TypingInputState extends State<TypingInput> with WidgetsBindingObserver {
   final _controller = TextEditingController();
   final _focus = FocusNode(debugLabel: 'typing-input');
 
+  /// Characters just handled from the physical keyboard. If a platform *also* delivers the
+  /// same character to the hidden TextField, it's dropped here so nothing is typed twice.
+  final _recentHardware = <(String, int)>[];
+  final _clock = Stopwatch()..start();
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    HardwareKeyboard.instance.addHandler(_onHardwareKey);
     _focus.addListener(_onFocusChange);
     _scheduleFocus();
   }
@@ -46,8 +60,8 @@ class _TypingInputState extends State<TypingInput> with WidgetsBindingObserver {
   @override
   void didUpdateWidget(covariant TypingInput old) {
     super.didUpdateWidget(old);
-    if (widget.enabled && (!old.enabled || widget.focusTrigger != old.focusTrigger)) _scheduleFocus();
-    if (!widget.enabled && old.enabled && _focus.hasFocus) _focus.unfocus();
+    if (widget.holdFocus && (!old.holdFocus || widget.focusTrigger != old.focusTrigger)) _scheduleFocus();
+    if (!widget.holdFocus && old.holdFocus && _focus.hasFocus) _focus.unfocus();
   }
 
   @override
@@ -55,47 +69,74 @@ class _TypingInputState extends State<TypingInput> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) _scheduleFocus();
   }
 
-  /// Lost focus while the game wants input → take it back, unless the user is
-  /// typing in some other text field (e.g. the sign-in form).
+  // ---------------------------------------------------------- physical keyboard
+
+  bool _onHardwareKey(KeyEvent event) {
+    if (!widget.acceptKeys || event is KeyUpEvent) return false;
+    final kb = HardwareKeyboard.instance;
+    if (kb.isMetaPressed || kb.isControlPressed || kb.isAltPressed) return false;
+    final ch = event.character;
+    if (ch == null || ch.length != 1 || ch.codeUnitAt(0) < 32 || ch.codeUnitAt(0) == 127) return false;
+    if (_otherTextFieldFocused()) return false; // e.g. someone typing in a real form
+    _recentHardware.add((ch.toLowerCase(), _clock.elapsedMilliseconds));
+    widget.onChar(ch);
+    return true; // handled: the platform won't also insert it into a text field
+  }
+
+  bool _consumeHardwareEcho(String ch) {
+    final now = _clock.elapsedMilliseconds;
+    _recentHardware.removeWhere((e) => now - e.$2 > 300);
+    final i = _recentHardware.indexWhere((e) => e.$1 == ch.toLowerCase());
+    if (i < 0) return false;
+    _recentHardware.removeAt(i);
+    return true;
+  }
+
+  // ---------------------------------------------------- on-screen keyboard field
+
   void _onFocusChange() {
-    if (!_focus.hasFocus && widget.enabled) _scheduleFocus();
+    if (!_focus.hasFocus && widget.holdFocus) _scheduleFocus();
   }
 
   bool _otherTextFieldFocused() {
-    final ctx = FocusManager.instance.primaryFocus?.context;
-    if (ctx == null || FocusManager.instance.primaryFocus == _focus) return false;
+    final primary = FocusManager.instance.primaryFocus;
+    final ctx = primary?.context;
+    if (ctx == null || primary == _focus) return false;
     return ctx.widget is EditableText || ctx.findAncestorWidgetOfExactType<EditableText>() != null;
   }
 
   void _scheduleFocus() {
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !widget.enabled || _focus.hasFocus || _otherTextFieldFocused()) return;
+      if (!mounted || !widget.holdFocus || _focus.hasFocus || _otherTextFieldFocused()) return;
       _focus.requestFocus();
     });
+  }
+
+  void _onChanged(String text) {
+    if (text.isEmpty) return;
+    _controller.value = TextEditingValue.empty;
+    if (!widget.acceptKeys) return;
+    for (final rune in text.runes) {
+      final ch = String.fromCharCode(rune);
+      if (_consumeHardwareEcho(ch)) continue; // already handled as a physical key press
+      widget.onChar(ch);
+    }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    HardwareKeyboard.instance.removeHandler(_onHardwareKey);
     _focus.removeListener(_onFocusChange);
     _controller.dispose();
     _focus.dispose();
     super.dispose();
   }
 
-  void _onChanged(String text) {
-    if (text.isEmpty) return;
-    _controller.value = TextEditingValue.empty;
-    if (!widget.enabled) return;
-    for (final rune in text.runes) {
-      widget.onChar(String.fromCharCode(rune));
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Listener(
-      // Any tap/click inside the game re-arms typing too (and re-opens the phone keyboard).
+      // Any tap/click inside the game re-arms the field too (re-opens the phone keyboard).
       behavior: HitTestBehavior.translucent,
       onPointerUp: (_) => _scheduleFocus(),
       child: Stack(
@@ -108,12 +149,11 @@ class _TypingInputState extends State<TypingInput> with WidgetsBindingObserver {
             child: Opacity(
               opacity: 0,
               child: ExcludeSemantics(
-                excluding: !widget.enabled,
                 child: TextField(
                   key: TypingInput.fieldKey,
                   controller: _controller,
                   focusNode: _focus,
-                  enabled: widget.enabled,
+                  // Always enabled: switching it off between games is what used to lose the keyboard.
                   autocorrect: false,
                   enableSuggestions: false,
                   enableInteractiveSelection: false,
