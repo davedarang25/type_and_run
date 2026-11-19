@@ -6,15 +6,16 @@ A horror-exploration typing game. You're a paranormal live-streamer: every step,
 type_and_run/
   backend/        Express + MySQL REST API (server.js, routes/{user,game,ghost}Routes.js, controllers/gameController.js)
   react_game/     React + TypeScript + Zustand + Tailwind (web)
+  react_native_game/  React Native (Expo) + TypeScript + Zustand (iPhone, Android, web)
   flutter_game/   Flutter + Riverpod (Android, iOS, Web, Windows, macOS, Linux)
   package.json   npm run dev → backend + React together
   .github/workflows/ci.yml   tests all three on every push
 ```
 
 ```
- react_game ──┐                                  ┌── 10 tables (schema.sql)
-              ├── HTTPS + JWT ──▶ backend (Express) ──▶ MySQL / MariaDB
- flutter_game ┘     /api/...                     └── game content (seed.sql)
+ react_game ─────────┐
+ react_native_game ──┼── HTTP + JWT ──▶ backend (Express) ──▶ MySQL / MariaDB
+ flutter_game ───────┘     /api/...
 ```
 
 | | `react_game/` | `flutter_game/` |
@@ -38,11 +39,16 @@ npm install && npm run setup             # installs root, backend, react_game
 npm run db:reset                         # creates the database, 10 tables and content (wipes players!)
 npm run dev                              # API on :3000 + React on http://localhost:5173
 
-# 2. Flutter (second terminal)
+# 2. React Native (another terminal) — scan the QR code with Expo Go
+cd react_native_game && npm install && npx expo start
+
+# 3. Flutter (another terminal)
 cd flutter_game
 bash tool/setup.sh                       # first time only: platform folders + network permissions
 flutter run -d macos                     # or -d chrome
 ```
+
+**React Native** finds the backend at port 3000 on the computer running `npx expo start`, so a phone in Expo Go works over Wi-Fi without setup. See [react_native_game/README.md](react_native_game/README.md).
 
 **No URLs to configure.** Both games connect to the backend automatically:
 

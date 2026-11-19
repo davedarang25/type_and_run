@@ -1,8 +1,9 @@
 // Generates the shared game content from react/src/data/seed.ts (the single source of truth):
 //   backend/database/seed.sql            → MySQL / MariaDB (loaded by `npm run db:reset` in backend/)
 //   flutter_game/lib/data/seed.g.dart    → Flutter offline mode
+//   react_native_game/src/data/seed.ts   → React Native offline mode (copy)
 // Run: npm run content   (from react_game/)
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import * as S from '../src/data/seed.ts';
 
 const root = (p: string) => new URL(`../../${p}`, import.meta.url);
@@ -70,4 +71,11 @@ const dart = [
 mkdirSync(root('flutter_game/lib/data'), { recursive: true });
 writeFileSync(root('flutter_game/lib/data/seed.g.dart'), dart);
 
-console.log('wrote backend/database/seed.sql and flutter_game/lib/data/seed.g.dart');
+// --------------------------------------------------------- React Native
+const seedTs = readFileSync(new URL('../src/data/seed.ts', import.meta.url), 'utf8')
+  .replace("from '../types/db.ts'", "from '../types/db'");
+mkdirSync(root('react_native_game/src/data'), { recursive: true });
+writeFileSync(root('react_native_game/src/data/seed.ts'),
+  '// COPIED by react_game/scripts/gen-content.ts from react_game/src/data/seed.ts. Edit that file instead.\n' + seedTs);
+
+console.log('wrote backend/database/seed.sql, flutter_game/lib/data/seed.g.dart, react_native_game/src/data/seed.ts');
