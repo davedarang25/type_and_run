@@ -23,12 +23,14 @@ const _offline = bool.fromEnvironment('OFFLINE');
 /// `--dart-define=API_URL=http://<your computer's LAN IP>:3000/api`
 String defaultApiUrl() {
   if (kIsWeb) {
-    return '${Uri.base.scheme}://${Uri.base.host}:3000/api';
+    return 'http://127.0.0.1:3000/api';
   }
+
   if (defaultTargetPlatform == TargetPlatform.android) {
     return 'http://10.0.2.2:3000/api';
   }
-  return 'http://localhost:3000/api';
+
+  return 'http://127.0.0.1:3000/api';
 }
 
 Future<void> main() async {

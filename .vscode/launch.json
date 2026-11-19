@@ -1,4 +1,3 @@
-
 {
     "version": "0.2.0",
     "configurations": [
@@ -8,7 +7,6 @@
             "request": "launch",
             "program": "lib/main.dart",
             "cwd": "${workspaceFolder}/flutter_game",
-            "deviceId": "chrome",
             "preLaunchTask": "Ensure Backend Running"
         }
     ]

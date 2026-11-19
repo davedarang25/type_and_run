@@ -4,30 +4,34 @@
     "tasks": [
         {
             "label": "Ensure Backend Running",
-            "type": "shell",
-            "command": "powershell",
+            "type": "process",
+            "command": "node",
             "args": [
-                "-NoProfile",
-                "-ExecutionPolicy",
-                "Bypass",
-                "-Command",
-                "$running = Test-NetConnection localhost -Port 3000 -WarningAction SilentlyContinue; if (-not $running.TcpTestSucceeded) { Start-Process cmd.exe -ArgumentList '/k', 'npm run dev' -WorkingDirectory '${workspaceFolder}\\backend' -WindowStyle Minimized; $ready = $false; for ($i = 0; $i -lt 30; $i++) { Start-Sleep 1; if ((Test-NetConnection localhost -Port 3000 -WarningAction SilentlyContinue).TcpTestSucceeded) { $ready = $true; break } }; if (-not $ready) { throw 'Backend failed to start. Check backend terminal.' } }"
-            ],
-            "problemMatcher": []
-        },
-        {
-            "label": "Start Flutter",
-            "type": "shell",
-            "command": "flutter",
-            "args": [
-                "run",
-                "-d",
-                "chrome"
+                "${workspaceFolder}/backend/scripts/ensure-backend.cjs"
             ],
             "options": {
-                "cwd": "${workspaceFolder}/flutter_game"
+                "cwd": "${workspaceFolder}"
             },
-            "problemMatcher": []
+            "isBackground": true,
+            "problemMatcher": {
+                "owner": "custom",
+                "pattern": {
+                    "regexp": "^BACKEND_READY$",
+                    "file": 1,
+                    "message": 2
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "Starting Type and Run backend",
+                    "endsPattern": "BACKEND_READY"
+                }
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false,
+                "showReuseMessage": false
+            }
         }
     ]
 }
