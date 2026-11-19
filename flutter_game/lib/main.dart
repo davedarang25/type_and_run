@@ -19,10 +19,15 @@ const _offline = bool.fromEnvironment('OFFLINE');
 ///   web               → port 3000 on the host serving the page (localhost or your LAN IP)
 ///   Android emulator  → 10.0.2.2 is the emulator's alias for your computer
 ///   macOS/Windows/Linux/iOS simulator → localhost
-/// A real phone needs --dart-define=API_URL=http://<your computer's LAN IP>:3000/api
+/// A real phone needs
+/// `--dart-define=API_URL=http://<your computer's LAN IP>:3000/api`
 String defaultApiUrl() {
-  if (kIsWeb) return '${Uri.base.scheme}://${Uri.base.host}:3000/api';
-  if (defaultTargetPlatform == TargetPlatform.android) return 'http://10.0.2.2:3000/api';
+  if (kIsWeb) {
+    return '${Uri.base.scheme}://${Uri.base.host}:3000/api';
+  }
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    return 'http://10.0.2.2:3000/api';
+  }
   return 'http://localhost:3000/api';
 }
 
@@ -32,7 +37,9 @@ Future<void> main() async {
 
   final GameRepository repo = _offline
       ? LocalRepository(store)
-      : ApiRepository(ApiClient(_apiUrlOverride.isNotEmpty ? _apiUrlOverride : defaultApiUrl(), store));
+      : ApiRepository(ApiClient(
+          _apiUrlOverride.isNotEmpty ? _apiUrlOverride : defaultApiUrl(),
+          store));
 
   runApp(ProviderScope(
     overrides: [repositoryProvider.overrideWithValue(repo)],

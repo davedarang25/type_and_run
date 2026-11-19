@@ -1,0 +1,15 @@
+
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Type and Run",
+            "type": "dart",
+            "request": "launch",
+            "program": "lib/main.dart",
+            "cwd": "${workspaceFolder}/flutter_game",
+            "deviceId": "chrome",
+            "preLaunchTask": "Ensure Backend Running"
+        }
+    ]
+}
