@@ -11,8 +11,9 @@
 -- =============================================================================
 
 SET FOREIGN_KEY_CHECKS = 0;
-DROP TABLE IF EXISTS game_sessions, user_inventory, user_place_progress, place_item_spawns, ghost_required_items,
-  place_ghosts, items, haunted_places, ghost_type, word_bank, users;
+DROP TABLE IF EXISTS
+  game_sessions, user_inventory, user_place_progress, place_item_spawns, ghost_required_items,
+  place_ghosts, items, word_bank_has_haunted_places, haunted_places, ghost_type, word_bank, users;
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- 1. USERS --------------------------------------------------------------------
@@ -206,3 +207,19 @@ CREATE TABLE game_sessions (
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
+
+-- 12.WORD_BANK_HAS_HAUNTED_PLACES -----------------------------------------------
+CREATE TABLE word_bank_has_haunted_places (
+  word_bank_word_id       INT NOT NULL,
+  haunted_places_place_id INT NOT NULL,
+
+  PRIMARY KEY (word_bank_word_id, haunted_places_place_id),
+
+  CONSTRAINT wb_hph_word_fk
+    FOREIGN KEY (word_bank_word_id)
+    REFERENCES word_bank(word_id),
+
+  CONSTRAINT wb_hph_place_fk
+    FOREIGN KEY (haunted_places_place_id)
+    REFERENCES haunted_places(place_id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
