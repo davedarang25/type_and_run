@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
@@ -83,17 +82,17 @@ class _CameraFeedState extends State<CameraFeed> with TickerProviderStateMixin {
             ),
           ),
           child: Stack(children: [
-            // apparition
+            // apparition + red edges + static — drawn with plain shapes only (no blur filters,
+            // no Opacity layers), so it looks the same in Chrome, macOS and on phones.
             Positioned.fill(
               child: IgnorePointer(
-                child: Align(
-                  alignment: Alignment(reduceMotion ? 0.0 : (_drift.value - 0.5) * 0.08, -0.3),
-                  child: Opacity(
-                    opacity: max(0, p * 0.9 - 0.05),
-                    child: ImageFiltered(
-                      imageFilter: ui.ImageFilter.blur(sigmaX: (1 - p) * 14 + 2, sigmaY: (1 - p) * 14 + 2),
-                      child: const _Apparition(),
-                    ),
+                child: CustomPaint(
+                  painter: _GhostPainter(
+                    proximity: p,
+                    drift: reduceMotion ? 0.0 : (_drift.value - 0.5) * 2,
+                    pulse: reduceMotion ? 0.0 : _pulse.value,
+                    chasing: widget.chasing,
+                    glitch: !reduceMotion,
                   ),
                 ),
               ),
@@ -133,35 +132,6 @@ class _CameraFeedState extends State<CameraFeed> with TickerProviderStateMixin {
   }
 }
 
-class _Apparition extends StatelessWidget {
-  const _Apparition();
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 140,
-      height: 300,
-      child: Column(children: [
-        Container(
-          width: 56,
-          height: 70,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: RadialGradient(colors: [const Color(0xFFDCE1E6).withValues(alpha: 0.55), Colors.transparent]),
-          ),
-        ),
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(60), bottom: Radius.circular(20)),
-              gradient: RadialGradient(colors: [const Color(0xFFC8CDD7).withValues(alpha: 0.32), Colors.transparent]),
-            ),
-          ),
-        ),
-      ]),
-    );
-  }
-}
-
 class _ScanlinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -173,4 +143,126 @@ class _ScanlinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// The ghost. Grows, sharpens and drifts closer as [proximity] rises; red eyes during a
+/// chase; red glow creeping in from the edges and video static when it's very close.
+/// Everything is drawn with filled paths and semi-transparent colours — no ImageFilter,
+/// MaskFilter or Opacity layers — because those render differently in Flutter web.
+class _GhostPainter extends CustomPainter {
+  _GhostPainter({
+    required this.proximity,
+    required this.drift,
+    required this.pulse,
+    required this.chasing,
+    required this.glitch,
+  });
+
+  final double proximity; // 0..1
+  final double drift; // -1..1
+  final double pulse; // 0..1, animates continuously
+  final bool chasing;
+  final bool glitch;
+
+  static const _ghost = Color(0xFFDCE2EC);
+  static const _blood = Color(0xFFE0313F);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final p = proximity.clamp(0.0, 1.0);
+    if (p > 0.35) _redEdges(canvas, size, (p - 0.35) / 0.65);
+    if (p < 0.06) return;
+
+    final v = ((p - 0.06) / 0.94).clamp(0.0, 1.0); // visibility 0..1
+    final h = size.height * (0.40 + 0.34 * v); // bigger = closer
+    final jitter = glitch && p > 0.75 ? (Random(DateTime.now().millisecondsSinceEpoch ~/ 70).nextDouble() - 0.5) * 12 : 0.0;
+    final cx = size.width / 2 + drift * size.width * 0.05 + jitter;
+    final top = size.height * 0.52 - h * 0.55;
+    final figure = _figure(cx, top, h);
+    final mid = Offset(cx, top + h / 2);
+
+    // Soft edge: the silhouette repeated slightly larger and fainter.
+    for (var i = 6; i >= 1; i--) {
+      final s = 1 + i * 0.035;
+      canvas.save();
+      canvas.translate(mid.dx, mid.dy);
+      canvas.scale(s, s);
+      canvas.translate(-mid.dx, -mid.dy);
+      canvas.drawPath(figure, Paint()..color = _ghost.withValues(alpha: 0.035 * v));
+      canvas.restore();
+    }
+    canvas.drawPath(figure, Paint()..color = _ghost.withValues(alpha: 0.07 + 0.20 * v));
+
+    // Hollow face and eyes once it's close enough to see.
+    final headR = h * 0.09;
+    final headC = Offset(cx, top + headR);
+    if (v > 0.25) {
+      canvas.drawOval(
+        Rect.fromCenter(center: headC.translate(0, headR * 0.15), width: headR * 1.3, height: headR * 1.5),
+        Paint()..color = const Color(0xFF050508).withValues(alpha: 0.55 * v),
+      );
+      final eye = Paint()
+        ..color = chasing ? _blood.withValues(alpha: (0.6 + 0.4 * pulse) * v) : _ghost.withValues(alpha: 0.75 * v);
+      for (final dx in [-0.32, 0.32]) {
+        canvas.drawOval(
+          Rect.fromCenter(center: headC.translate(headR * dx, headR * 0.05), width: headR * 0.26, height: headR * 0.16),
+          eye,
+        );
+      }
+    }
+
+    if (glitch && p > 0.6) _static(canvas, size, (p - 0.6) / 0.4);
+  }
+
+  /// Hooded figure: head + flared, tattered robe.
+  Path _figure(double cx, double top, double h) {
+    final headR = h * 0.09;
+    final w = h * 0.2;
+    final bottom = top + h;
+    final shoulderY = top + headR * 2.4;
+    return Path()
+      ..addOval(Rect.fromCircle(center: Offset(cx, top + headR), radius: headR * 1.05))
+      ..addPath(
+        Path()
+          ..moveTo(cx - headR * 0.75, top + headR * 1.75)
+          ..quadraticBezierTo(cx - w * 1.05, shoulderY, cx - w * 1.25, bottom)
+          ..lineTo(cx - w * 0.75, bottom - h * 0.06)
+          ..lineTo(cx - w * 0.3, bottom - h * 0.01)
+          ..lineTo(cx + w * 0.15, bottom - h * 0.07)
+          ..lineTo(cx + w * 0.65, bottom - h * 0.02)
+          ..lineTo(cx + w * 1.25, bottom)
+          ..quadraticBezierTo(cx + w * 1.05, shoulderY, cx + headR * 0.75, top + headR * 1.75)
+          ..close(),
+        Offset.zero,
+      );
+  }
+
+  /// Red glow creeping in from the edges, pulsing during a chase.
+  void _redEdges(Canvas canvas, Size size, double k) {
+    final band = size.shortestSide * 0.014;
+    final beat = chasing ? 0.65 + 0.35 * pulse : 1.0;
+    for (var i = 0; i < 10; i++) {
+      final rect = (Offset.zero & size).deflate(band * i + band / 2);
+      canvas.drawRect(
+        rect,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = band
+          ..color = _blood.withValues(alpha: 0.13 * k * beat * (1 - i / 10)),
+      );
+    }
+  }
+
+  /// Horizontal video-static lines.
+  void _static(Canvas canvas, Size size, double k) {
+    final rnd = Random(DateTime.now().millisecondsSinceEpoch ~/ 90);
+    final paint = Paint()..color = Colors.white.withValues(alpha: 0.10 * k);
+    for (var i = 0; i < 7; i++) {
+      final y = rnd.nextDouble() * size.height;
+      canvas.drawRect(Rect.fromLTWH(0, y, size.width, 1 + rnd.nextDouble() * 2.5), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _GhostPainter old) => true;
 }
