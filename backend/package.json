@@ -20,6 +20,7 @@
     "express": "^4.22.3",
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.24.6",
+    "pg": "^8.23.1",
     "type-and-run": "file:.."
   },
   "devDependencies": {

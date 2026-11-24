@@ -1,32 +1,79 @@
-// MySQL connection pool (mysql2/promise). Settings come from .env.
-require('dotenv').config();
-const mysql = require('mysql2/promise');
 
-const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  port: Number(process.env.DB_PORT || 3306),
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'type_and_run',
-  waitForConnections: true,
-  connectionLimit: 10,
-  decimalNumbers: true, // DECIMAL columns (best_wpm, best_accuracy) come back as numbers
+/**
+ * Type-to-Run
+ * PostgreSQL connection pool
+ */
+
+const path = require('path');
+
+require('dotenv').config({
+  path: path.join(__dirname, '../.env'),
 });
 
-/** Runs fn(conn) inside a transaction; commits on success, rolls back on any error. */
+console.log('PostgreSQL config:', {
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  database: process.env.DB_NAME,
+  ssl: process.env.DB_SSL,
+  passwordLoaded: Boolean(process.env.DB_PASSWORD),
+});
+
+const { Pool, types } = require('pg');
+
+// Convert PostgreSQL DECIMAL / NUMERIC values into JavaScript numbers.
+types.setTypeParser(1700, (value) => Number(value));
+
+const pool = new Pool({
+  host: process.env.DB_HOST || 'localhost',
+  port: Number(process.env.DB_PORT || 5432),
+  user: process.env.DB_USER || 'type_and_run_user',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'type_and_run',
+
+  ssl:
+    process.env.DB_SSL === 'true'
+      ? { rejectUnauthorized: false }
+      : undefined,
+
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
+});
+
+/**
+ * Runs a function inside a PostgreSQL transaction.
+ *
+ * Usage:
+ * await withTransaction(async (client) => {
+ *   await client.query('...');
+ * });
+ */
 async function withTransaction(fn) {
-  const conn = await pool.getConnection();
+  const client = await pool.connect();
+
   try {
-    await conn.beginTransaction();
-    const result = await fn(conn);
-    await conn.commit();
+    await client.query('BEGIN');
+
+    const result = await fn(client);
+
+    await client.query('COMMIT');
+
     return result;
   } catch (err) {
-    await conn.rollback();
+    try {
+      await client.query('ROLLBACK');
+    } catch (rollbackError) {
+      // Preserve the original transaction error.
+    }
+
     throw err;
   } finally {
-    conn.release();
+    client.release();
   }
 }
 
-module.exports = { pool, withTransaction };
+module.exports = {
+  pool,
+  withTransaction,
+};

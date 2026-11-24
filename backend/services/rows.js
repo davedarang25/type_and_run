@@ -1,18 +1,37 @@
-// MySQL returns BOOLEAN columns as 0/1; the clients expect true/false.
-const bool = (v) => v === 1 || v === true || v === '1';
 
-const place = (r) => ({ ...r, is_unlocked: bool(r.is_unlocked) });
+const bool = (value) =>
+  value === true ||
+  value === 1 ||
+  value === '1';
 
-const progress = (r) =>
-  r && {
-    ...r,
-    exploration_completed: bool(r.exploration_completed),
-    ritual_completed: bool(r.ritual_completed),
+const place = (row) => ({
+  ...row,
+  is_unlocked: bool(row.is_unlocked),
+});
+
+const progress = (row) =>
+  row && {
+    ...row,
+    exploration_completed: bool(
+      row.exploration_completed
+    ),
+    ritual_completed: bool(
+      row.ritual_completed
+    ),
   };
 
-const placeGhost = (r) => ({ ...r, is_boss: bool(r.is_boss) });
+const placeGhost = (row) => ({
+  ...row,
+  is_boss: bool(row.is_boss),
+});
 
-/** users row without the password hash. */
-const user = ({ password, ...rest }) => rest; // eslint-disable-line no-unused-vars
+// Return user data without the password hash.
+const user = ({ password, ...rest }) => rest;
 
-module.exports = { bool, place, progress, placeGhost, user };
+module.exports = {
+  bool,
+  place,
+  progress,
+  placeGhost,
+  user,
+};
