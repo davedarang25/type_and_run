@@ -21,16 +21,22 @@ const _offline = bool.fromEnvironment('OFFLINE');
 ///   macOS/Windows/Linux/iOS simulator → localhost
 /// A real phone needs
 /// `--dart-define=API_URL=http://<your computer's LAN IP>:3000/api`
+const useLocalBackend = bool.fromEnvironment('USE_LOCAL_BACKEND');
+
 String defaultApiUrl() {
-  if (kIsWeb) {
+  if (useLocalBackend) {
+    if (kIsWeb) {
+      return 'http://127.0.0.1:3000/api';
+    }
+
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return 'http://10.0.2.2:3000/api';
+    }
+
     return 'http://127.0.0.1:3000/api';
   }
 
-  if (defaultTargetPlatform == TargetPlatform.android) {
-    return 'http://10.0.2.2:3000/api';
-  }
-
-  return 'http://127.0.0.1:3000/api';
+  return 'https://type-to-run-api.onrender.com/api';
 }
 
 Future<void> main() async {
