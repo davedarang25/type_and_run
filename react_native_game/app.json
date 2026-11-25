@@ -20,6 +20,8 @@
       "package": "com.anonymous.react_native_game"
     },
     "web": {
+      "bundler": "metro",
+      "output": "single",
       "favicon": "./assets/favicon.png",
       "name": "Type-to-Run"
     },

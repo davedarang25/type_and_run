@@ -24,7 +24,9 @@ const offline = process.env.EXPO_PUBLIC_OFFLINE === 'true';
 const configured = process.env.EXPO_PUBLIC_API_URL?.trim();
 
 /** Base URL of the backend API, or null for offline play. */
-export const apiBaseUrl: string | null = offline ? null : (configured || defaultApiUrl()).replace(/\/$/, '');
+export const apiBaseUrl: string | null = offline
+  ? null
+  : 'https://type-to-run-api.onrender.com/api';
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
