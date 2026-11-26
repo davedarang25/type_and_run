@@ -16,7 +16,6 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.react_native_game"
     },
     "web": {
@@ -25,6 +24,9 @@
       "favicon": "./assets/favicon.png",
       "name": "Type-to-Run"
     },
-    "backgroundColor": "#07080a"
+    "backgroundColor": "#07080a",
+    "plugins": [
+      "expo-asset"
+    ]
   }
 }
