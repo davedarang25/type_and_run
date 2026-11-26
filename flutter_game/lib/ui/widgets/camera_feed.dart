@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 import '../theme.dart';
+import 'walk_camera.dart';
 
 const _tints = {
   'flickering': Color(0xFF1A1810),
@@ -15,11 +17,31 @@ const _tints = {
 /// The "camera" viewport: scanlines, vignette, flicker and an apparition that
 /// sharpens as proximity rises. Pulses red during a chase or rite.
 class CameraFeed extends StatefulWidget {
-  const CameraFeed({super.key, required this.proximity, required this.chasing, required this.atmosphere, required this.child});
+  const CameraFeed({
+    super.key,
+    required this.proximity,
+    required this.chasing,
+    required this.atmosphere,
+    required this.child,
+    this.keystrokes = 0,
+    this.steps = 0,
+    this.typoAt = 0,
+    this.walking = false,
+    this.timed = false,
+    this.running = false,
+  });
   final double proximity;
   final bool chasing;
   final String atmosphere;
   final Widget child;
+
+  // Walking-camera inputs (from GameEngineState):
+  final int keystrokes; // stats.correctKeystrokes — each one is a footstep
+  final int steps; // playerDistance — each completed move word lurches forward
+  final int typoAt; // changes on every typo — stumble
+  final bool walking; // current prompt is a move/escape word
+  final bool timed; // current prompt is timed (typos there count)
+  final bool running; // being chased
 
   @override
   State<CameraFeed> createState() => _CameraFeedState();
@@ -31,6 +53,11 @@ class _CameraFeedState extends State<CameraFeed> with TickerProviderStateMixin {
   late final AnimationController _drift = AnimationController(vsync: this, duration: const Duration(seconds: 5))
     ..repeat(reverse: true);
   final _rand = Random();
+
+  // Walking camera
+  WalkState _walk = const WalkState();
+  late final Ticker _walkTicker;
+  Duration _lastTick = Duration.zero;
   double _flicker = 1;
   Timer? _flickerTimer;
   Timer? _restoreTimer;
@@ -38,6 +65,12 @@ class _CameraFeedState extends State<CameraFeed> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    _walkTicker = createTicker((elapsed) {
+      final dt = (elapsed - _lastTick).inMicroseconds / 1e6;
+      _lastTick = elapsed;
+      setState(() => _walk = _walk.advance(dt, running: widget.running));
+    })
+      ..start();
     _scheduleFlicker();
   }
 
@@ -55,9 +88,18 @@ class _CameraFeedState extends State<CameraFeed> with TickerProviderStateMixin {
   }
 
   @override
+  void didUpdateWidget(covariant CameraFeed old) {
+    super.didUpdateWidget(old);
+    if (old.walking && widget.keystrokes > old.keystrokes) _walk = _walk.keystroke();
+    if (widget.steps > old.steps) _walk = _walk.step();
+    if (old.timed && widget.typoAt != old.typoAt && widget.typoAt != 0) _walk = _walk.stumbled();
+  }
+
+  @override
   void dispose() {
     _flickerTimer?.cancel();
     _restoreTimer?.cancel();
+    _walkTicker.dispose();
     _pulse.dispose();
     _drift.dispose();
     super.dispose();
@@ -84,17 +126,42 @@ class _CameraFeedState extends State<CameraFeed> with TickerProviderStateMixin {
           child: Stack(children: [
             // apparition + red edges + static — drawn with plain shapes only (no blur filters,
             // no Opacity layers), so it looks the same in Chrome, macOS and on phones.
+            // WORLD LAYER — corridor + ghost move with the walking camera; the typed word
+            // (child, below) stays steady so it's always readable.
             Positioned.fill(
               child: IgnorePointer(
-                child: CustomPaint(
-                  painter: _GhostPainter(
-                    proximity: p,
-                    drift: reduceMotion ? 0.0 : (_drift.value - 0.5) * 2,
-                    pulse: reduceMotion ? 0.0 : _pulse.value,
-                    chasing: widget.chasing,
-                    glitch: !reduceMotion,
-                  ),
-                ),
+                child: LayoutBuilder(builder: (context, box) {
+                  final pose = reduceMotion
+                      ? (x: 0.0, y: 0.0, roll: 0.0)
+                      : _walk.pose(running: widget.running, unit: box.maxHeight / 400);
+                  return Transform.translate(
+                    offset: Offset(pose.x, pose.y),
+                    child: Transform.rotate(
+                      angle: pose.roll,
+                      child: Transform.scale(
+                        scale: 1.12,
+                        child: Stack(children: [
+                          Positioned.fill(
+                            child: CustomPaint(
+                              painter: CorridorPainter(depth: _walk.depth, time: _walk.t, atmosphere: widget.atmosphere),
+                            ),
+                          ),
+                          Positioned.fill(
+                            child: CustomPaint(
+                              painter: _GhostPainter(
+                                proximity: p,
+                                drift: reduceMotion ? 0.0 : (_drift.value - 0.5) * 2,
+                                pulse: reduceMotion ? 0.0 : _pulse.value,
+                                chasing: widget.chasing,
+                                glitch: !reduceMotion,
+                              ),
+                            ),
+                          ),
+                        ]),
+                      ),
+                    ),
+                  );
+                }),
               ),
             ),
             Positioned.fill(child: IgnorePointer(child: CustomPaint(painter: _ScanlinePainter()))),

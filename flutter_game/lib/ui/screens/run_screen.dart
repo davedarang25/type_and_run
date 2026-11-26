@@ -38,6 +38,12 @@ class RunScreen extends ConsumerWidget {
       proximity: s.ghostProximity,
       chasing: hunting,
       atmosphere: content.place.atmosphere,
+      keystrokes: s.stats.correctKeystrokes,
+      steps: s.playerDistance,
+      typoAt: s.typoAt,
+      walking: s.prompt?.kind == PromptKind.move || s.prompt?.kind == PromptKind.escape,
+      timed: s.prompt?.timed ?? false,
+      running: s.chase != null,
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: 460),
         child: Padding(

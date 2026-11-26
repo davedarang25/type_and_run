@@ -60,3 +60,11 @@ src/
 ```
 
 **Typing across games:** `TypingCapture` is mounted once in `App.tsx` and takes focus back on every new prompt or phase, when the app returns to the foreground, and whenever it loses focus. So the next game accepts letters without tapping the screen.
+
+## Walking camera
+
+While you type a movement word, the camera moves as if you're walking: one bob per keystroke, a forward lurch down the corridor on each completed word, and a stumble on typos. During a chase it runs, with faster and bigger movement. The typed word stays steady on top so it's always readable. Each level has its own corridor: dorm doors, mansion fog and roots, buzzing hospital lights, and chapel water.
+
+- Model (pure math, unit-tested): `src/engine/walkCamera.ts`
+- Drawing: `src/components/CameraFeed.tsx` (react-native-svg)
+- Flutter port: `flutter_game/lib/ui/widgets/walk_camera.dart`
