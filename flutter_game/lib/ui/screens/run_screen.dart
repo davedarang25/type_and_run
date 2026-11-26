@@ -128,23 +128,23 @@ class RunScreen extends ConsumerWidget {
     );
 
     return LayoutBuilder(builder: (context, c) {
-        final wide = c.maxWidth >= 900;
-        final header = StreamHeader(title: content.place.placeName, viewers: viewers, startedAt: s.sessionStartedAt, mode: repo.mode);
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1180),
-              child: wide
-                  ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Expanded(child: Column(children: [header, const SizedBox(height: 16), feed])),
-                      const SizedBox(width: 20),
-                      SizedBox(width: 300, child: sidebar),
-                    ])
-                  : Column(children: [header, const SizedBox(height: 16), feed, const SizedBox(height: 16), sidebar]),
-            ),
+      final wide = c.maxWidth >= 900;
+      final header = StreamHeader(title: content.place.placeName, viewers: viewers, startedAt: s.sessionStartedAt, mode: repo.mode);
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1180),
+            child: wide
+                ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Expanded(child: Column(children: [header, const SizedBox(height: 16), feed])),
+                    const SizedBox(width: 20),
+                    SizedBox(width: 300, child: sidebar),
+                  ])
+                : Column(children: [header, const SizedBox(height: 16), feed, const SizedBox(height: 16), sidebar]),
           ),
-        );
-      });
+        ),
+      );
+    });
   }
 }

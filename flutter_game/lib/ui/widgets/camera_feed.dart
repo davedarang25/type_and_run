@@ -14,8 +14,6 @@ const _tints = {
   'flooded': Color(0xFF0B1420),
 };
 
-/// The "camera" viewport: scanlines, vignette, flicker and an apparition that
-/// sharpens as proximity rises. Pulses red during a chase or rite.
 class CameraFeed extends StatefulWidget {
   const CameraFeed({
     super.key,
@@ -35,13 +33,12 @@ class CameraFeed extends StatefulWidget {
   final String atmosphere;
   final Widget child;
 
-  // Walking-camera inputs (from GameEngineState):
-  final int keystrokes; // stats.correctKeystrokes — each one is a footstep
-  final int steps; // playerDistance — each completed move word lurches forward
-  final int typoAt; // changes on every typo — stumble
-  final bool walking; // current prompt is a move/escape word
-  final bool timed; // current prompt is timed (typos there count)
-  final bool running; // being chased
+  final int keystrokes;
+  final int steps;
+  final int typoAt;
+  final bool walking;
+  final bool timed;
+  final bool running;
 
   @override
   State<CameraFeed> createState() => _CameraFeedState();
@@ -54,7 +51,6 @@ class _CameraFeedState extends State<CameraFeed> with TickerProviderStateMixin {
     ..repeat(reverse: true);
   final _rand = Random();
 
-  // Walking camera
   WalkState _walk = const WalkState();
   late final Ticker _walkTicker;
   Duration _lastTick = Duration.zero;
@@ -124,10 +120,6 @@ class _CameraFeedState extends State<CameraFeed> with TickerProviderStateMixin {
             ),
           ),
           child: Stack(children: [
-            // apparition + red edges + static — drawn with plain shapes only (no blur filters,
-            // no Opacity layers), so it looks the same in Chrome, macOS and on phones.
-            // WORLD LAYER — corridor + ghost move with the walking camera; the typed word
-            // (child, below) stays steady so it's always readable.
             Positioned.fill(
               child: IgnorePointer(
                 child: LayoutBuilder(builder: (context, box) {
@@ -165,7 +157,6 @@ class _CameraFeedState extends State<CameraFeed> with TickerProviderStateMixin {
               ),
             ),
             Positioned.fill(child: IgnorePointer(child: CustomPaint(painter: _ScanlinePainter()))),
-            // vignette
             Positioned.fill(
               child: IgnorePointer(
                 child: DecoratedBox(
@@ -212,10 +203,6 @@ class _ScanlinePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-/// The ghost. Grows, sharpens and drifts closer as [proximity] rises; red eyes during a
-/// chase; red glow creeping in from the edges and video static when it's very close.
-/// Everything is drawn with filled paths and semi-transparent colours — no ImageFilter,
-/// MaskFilter or Opacity layers — because those render differently in Flutter web.
 class _GhostPainter extends CustomPainter {
   _GhostPainter({
     required this.proximity,
@@ -225,9 +212,9 @@ class _GhostPainter extends CustomPainter {
     required this.glitch,
   });
 
-  final double proximity; // 0..1
-  final double drift; // -1..1
-  final double pulse; // 0..1, animates continuously
+  final double proximity;
+  final double drift;
+  final double pulse;
   final bool chasing;
   final bool glitch;
 
@@ -240,15 +227,14 @@ class _GhostPainter extends CustomPainter {
     if (p > 0.35) _redEdges(canvas, size, (p - 0.35) / 0.65);
     if (p < 0.06) return;
 
-    final v = ((p - 0.06) / 0.94).clamp(0.0, 1.0); // visibility 0..1
-    final h = size.height * (0.40 + 0.34 * v); // bigger = closer
+    final v = ((p - 0.06) / 0.94).clamp(0.0, 1.0);
+    final h = size.height * (0.40 + 0.34 * v);
     final jitter = glitch && p > 0.75 ? (Random(DateTime.now().millisecondsSinceEpoch ~/ 70).nextDouble() - 0.5) * 12 : 0.0;
     final cx = size.width / 2 + drift * size.width * 0.05 + jitter;
     final top = size.height * 0.52 - h * 0.55;
     final figure = _figure(cx, top, h);
     final mid = Offset(cx, top + h / 2);
 
-    // Soft edge: the silhouette repeated slightly larger and fainter.
     for (var i = 6; i >= 1; i--) {
       final s = 1 + i * 0.035;
       canvas.save();
@@ -260,7 +246,6 @@ class _GhostPainter extends CustomPainter {
     }
     canvas.drawPath(figure, Paint()..color = _ghost.withValues(alpha: 0.07 + 0.20 * v));
 
-    // Hollow face and eyes once it's close enough to see.
     final headR = h * 0.09;
     final headC = Offset(cx, top + headR);
     if (v > 0.25) {
@@ -281,7 +266,6 @@ class _GhostPainter extends CustomPainter {
     if (glitch && p > 0.6) _static(canvas, size, (p - 0.6) / 0.4);
   }
 
-  /// Hooded figure: head + flared, tattered robe.
   Path _figure(double cx, double top, double h) {
     final headR = h * 0.09;
     final w = h * 0.2;
@@ -304,7 +288,6 @@ class _GhostPainter extends CustomPainter {
       );
   }
 
-  /// Red glow creeping in from the edges, pulsing during a chase.
   void _redEdges(Canvas canvas, Size size, double k) {
     final band = size.shortestSide * 0.014;
     final beat = chasing ? 0.65 + 0.35 * pulse : 1.0;
@@ -320,7 +303,6 @@ class _GhostPainter extends CustomPainter {
     }
   }
 
-  /// Horizontal video-static lines.
   void _static(Canvas canvas, Size size, double k) {
     final rnd = Random(DateTime.now().millisecondsSinceEpoch ~/ 90);
     final paint = Paint()..color = Colors.white.withValues(alpha: 0.10 * k);

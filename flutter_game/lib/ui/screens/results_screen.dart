@@ -4,17 +4,85 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../repositories/game_repository.dart';
 import '../../state/game_engine.dart';
 import '../theme.dart';
+import '../widgets/jumpscare_overlay.dart';
 import '../widgets/typing_prompt.dart';
 
-class ResultsScreen extends ConsumerWidget {
+final jumpscareActiveProvider = StateProvider<bool>((ref) => false);
+
+String _jumpscareAssetFor(String? caughtBy) {
+  switch (caughtBy?.trim().toLowerCase()) {
+    case 'shadow figure':
+      return 'assets/images/jumpscare_shadow_figure.png';
+    case 'white lady':
+      return 'assets/images/jumpscare_white_lady.png';
+    case 'tiyanak':
+      return 'assets/images/jumpscare_tiyanak.png';
+    case 'kapre':
+      return 'assets/images/jumpscare_kapre.png';
+    case 'the head nurse':
+      return 'assets/images/jumpscare_head_nurse.png';
+    case 'manananggal':
+      return 'assets/images/jumpscare_manananggal.png';
+    default:
+      return 'assets/images/jumpscare_default.png';
+  }
+}
+
+class ResultsScreen extends ConsumerStatefulWidget {
   const ResultsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ResultsScreen> createState() => _ResultsScreenState();
+}
+
+class _ResultsScreenState extends ConsumerState<ResultsScreen> {
+  bool _showingScare = false;
+
+  void _setScareActive(bool active) {
+    if (!mounted) return;
+    setState(() => _showingScare = active);
+    Future.microtask(() {
+      if (mounted) ref.read(jumpscareActiveProvider.notifier).state = active;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final outcome = ref.read(gameEngineProvider).result?.outcome;
+    if (outcome == SessionOutcome.caught) {
+      _showingScare = true;
+      Future.microtask(() {
+        if (mounted) ref.read(jumpscareActiveProvider.notifier).state = true;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    Future.microtask(() => ref.read(jumpscareActiveProvider.notifier).state = false);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final s = ref.watch(gameEngineProvider);
     final engine = ref.read(gameEngineProvider.notifier);
     final r = s.result!;
     final caught = r.outcome == SessionOutcome.caught;
+
+    if (_showingScare) {
+      return Stack(
+        children: [
+          JumpscareOverlay(
+            imageAsset: _jumpscareAssetFor(r.caughtBy),
+            duration: const Duration(seconds: 3),
+            onFinished: () => _setScareActive(false),
+          ),
+        ],
+      );
+    }
+
     final newWpm = !caught && (r.previousBestWpm ?? 0) < r.wpm;
     final newAcc = !caught && (r.previousBestAccuracy ?? 0) < r.accuracy;
     final found = r.itemsFound.entries
@@ -30,35 +98,35 @@ class ResultsScreen extends ConsumerWidget {
     final secs = (r.durationSec % 60).toString().padLeft(2, '0');
 
     return Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 760),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(headline, style: display(size: 60, color: caught ? Palette.blood : Palette.bone)),
-              const SizedBox(height: 12),
-              Text(sub, style: mono(size: 13, color: Palette.dim)),
-              if (r.saveError != null) ...[
-                const SizedBox(height: 16),
-                Text('Could not save: ${r.saveError}', style: mono(size: 13, color: Palette.blood)),
-              ],
-              const SizedBox(height: 32),
-              Wrap(spacing: 12, runSpacing: 12, children: [
-                _Stat('WPM', r.wpm.toStringAsFixed(1), best: newWpm),
-                _Stat('Accuracy', '${r.accuracy.toStringAsFixed(1)}%', best: newAcc),
-                _Stat('Rooms', '${r.roomsExplored}'),
-                _Stat('Chases survived', '${r.chasesSurvived}'),
-              ]),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 760),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(headline, style: display(size: 60, color: caught ? Palette.blood : Palette.bone)),
+            const SizedBox(height: 12),
+            Text(sub, style: mono(size: 13, color: Palette.dim)),
+            if (r.saveError != null) ...[
               const SizedBox(height: 16),
-              Text('${mins}m ${secs}s live · ${r.stepsTaken} steps · items: ${found.isEmpty ? 'none' : found}',
-                  style: mono(size: 12, color: Palette.dim)),
-              const SizedBox(height: 40),
-              if (s.prompt != null)
-                Center(child: TypingPromptView(prompt: s.prompt!, buffer: s.buffer, typoAt: s.typoAt, onChoose: engine.choose)),
+              Text('Could not save: ${r.saveError}', style: mono(size: 13, color: Palette.blood)),
+            ],
+            const SizedBox(height: 32),
+            Wrap(spacing: 12, runSpacing: 12, children: [
+              _Stat('WPM', r.wpm.toStringAsFixed(1), best: newWpm),
+              _Stat('Accuracy', '${r.accuracy.toStringAsFixed(1)}%', best: newAcc),
+              _Stat('Rooms', '${r.roomsExplored}'),
+              _Stat('Chases survived', '${r.chasesSurvived}'),
             ]),
-          ),
+            const SizedBox(height: 16),
+            Text('${mins}m ${secs}s live · ${r.stepsTaken} steps · items: ${found.isEmpty ? 'none' : found}',
+                style: mono(size: 12, color: Palette.dim)),
+            const SizedBox(height: 40),
+            if (s.prompt != null)
+              Center(child: TypingPromptView(prompt: s.prompt!, buffer: s.buffer, typoAt: s.typoAt, onChoose: engine.choose)),
+          ]),
         ),
-      );
+      ),
+    );
   }
 }
 

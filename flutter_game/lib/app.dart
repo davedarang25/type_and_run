@@ -30,6 +30,7 @@ class _TypeToRunAppState extends ConsumerState<TypeToRunApp> {
   @override
   Widget build(BuildContext context) {
     final phase = ref.watch(gameEngineProvider.select((s) => s.phase));
+    final jumpscareActive = ref.watch(jumpscareActiveProvider);
     final promptShownAt = ref.watch(gameEngineProvider.select((s) => s.prompt?.shownAt ?? 0));
     final Widget screen = switch (phase) {
       Phase.boot || Phase.loading => Center(child: Text('CONNECTING TO STREAM…', style: label())),
@@ -44,11 +45,10 @@ class _TypeToRunAppState extends ConsumerState<TypeToRunApp> {
       theme: buildTheme(),
       home: Scaffold(
         body: SafeArea(
-          // Mounted once for the whole app so keyboard focus survives screen changes between runs.
           child: TypingInput(
-            acceptKeys: _typingPhases.contains(phase),
-            holdFocus: phase != Phase.auth, // let the sign-in form have the keyboard
-            focusTrigger: (phase, promptShownAt),
+            acceptKeys: !jumpscareActive && _typingPhases.contains(phase),
+            holdFocus: phase != Phase.auth,
+            focusTrigger: (phase, promptShownAt, jumpscareActive),
             onChar: ref.read(gameEngineProvider.notifier).pressKey,
             child: screen,
           ),
