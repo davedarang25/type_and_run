@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   dot: { width: 9, height: 9, borderRadius: 5, backgroundColor: C.blood },
   mode: { borderWidth: 1, borderColor: C.line, borderRadius: 4, paddingHorizontal: 5, fontSize: 9 },
   row: { flexDirection: 'row', gap: 18, alignItems: 'flex-start' },
-  feedInner: { minHeight: 360, padding: 18, justifyContent: 'space-between', gap: 20 },
+  feedInner: { minHeight: 1, padding: 18, justifyContent: 'space-between', gap: 20 },
   between: { flexDirection: 'row', justifyContent: 'space-between' },
   center: { alignItems: 'stretch', gap: 14 },
   centerText: { textAlign: 'center' },

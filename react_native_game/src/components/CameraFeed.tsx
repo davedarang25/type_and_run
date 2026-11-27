@@ -213,14 +213,14 @@ export function CameraFeed({
       {/* The corridor the streamer is standing in. */}
         <Image
           source={PLATE[atmosphere] ?? PLATE.flickering}
-          resizeMode="stretch"
+          resizeMode="contain"
           style={[StyleSheet.absoluteFill, styles.plate]}
         />
 
         {/* The chase corridor appears when something starts running. */}
         <Image
           source={CHASE_PLATE}
-          resizeMode="stretch"
+          resizeMode="contain"
           style={[
             StyleSheet.absoluteFill,
             styles.plate,
@@ -307,6 +307,8 @@ export function CameraFeed({
 
 const styles = StyleSheet.create({
   feed: {
+    width: '100%',
+    aspectRatio: 16 / 9,
     borderWidth: 2,
     borderRadius: 12,
     overflow: 'hidden',
