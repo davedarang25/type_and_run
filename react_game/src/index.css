@@ -73,36 +73,46 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .grain, .flicker, .shake, .chase-pulse, .apparition, .rec { animation: none !important; }
 }
-<<<<<<< HEAD
-=======
 
-/* ------------------------------------------------------------------ */
-/* Backrooms plates: the realistic corridor behind the drawn feed      */
-/* ------------------------------------------------------------------ */
+
+/* Force the complete corridor image to remain visible */
 .feed-plate {
   position: absolute;
   inset: 0;
-  z-index: 0;
   overflow: hidden;
-}
-.feed-plate img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transform: scale(1.08);
-  filter: saturate(0.82) contrast(1.06);
-  animation: plate-push 26s ease-in-out infinite alternate;
-}
-.feed-plate-chase {
-  transition: opacity 1.1s ease;
-}
-@keyframes plate-push {
-  from { transform: scale(1.04); }
-  to { transform: scale(1.16); }
+  background: #07080a;
 }
 
+.feed-plate img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain !important;
+  object-position: center center !important;
+  transform: none !important;
+  animation: none !important;
+}
+
+/* Force the complete jumpscare image to remain visible */
+.scare-plate {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #07080a;
+}
+
+.scare-plate img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain !important;
+  object-position: center center !important;
+  transform: none !important;
+}
+
+
 /* ------------------------------------------------------------------ */
-/* Jumpscare overlay — ported from the Flutter build                   */
+/* Jumpscare overlay                                                   */
 /* ------------------------------------------------------------------ */
 .scare {
   position: fixed;
@@ -111,27 +121,37 @@ body {
   overflow: hidden;
   background: #07080a;
 }
+
 .scare-plate {
   position: absolute;
   inset: 0;
 }
+
 .scare-plate img {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
+
 .scare-blood {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(ellipse at center, transparent 18%, rgba(224, 49, 63, 0.85) 100%);
+  background: radial-gradient(
+    ellipse at center,
+    transparent 18%,
+    rgba(224, 49, 63, 0.85) 100%
+  );
 }
+
 .scare-flash {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background: #ffffff;
 }
+
 .scare-caption {
   position: absolute;
   left: 0;
@@ -147,6 +167,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .feed-plate img { animation: none; }
+  .feed-plate img {
+    animation: none;
+  }
 }
->>>>>>> origin/main
