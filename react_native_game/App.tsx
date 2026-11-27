@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
@@ -5,10 +6,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { initStorage } from './src/lib/storage';
 import { gameStore, useGame } from './src/store';
 import { TypingCapture } from './src/components/TypingCapture';
-<<<<<<< HEAD
-=======
 import { JumpscareOverlay } from './src/components/JumpscareOverlay';
->>>>>>> origin/main
 import { AuthScreen } from './src/screens/AuthScreen';
 import { MenuScreen } from './src/screens/MenuScreen';
 import { ResultsScreen } from './src/screens/ResultsScreen';
@@ -17,13 +15,16 @@ import { C, T } from './src/theme';
 
 function Screen() {
   const phase = useGame((s) => s.phase);
+
   switch (phase) {
     case 'boot':
     case 'loading':
       return (
         <View style={styles.center}>
           <ActivityIndicator color={C.dim} />
-          <Text style={[T.label, { marginTop: 12 }]}>Connecting to stream…</Text>
+          <Text style={[T.label, { marginTop: 12 }]}>
+            Connecting to stream…
+          </Text>
         </View>
       );
     case 'auth':
@@ -38,9 +39,7 @@ function Screen() {
   }
 }
 
-<<<<<<< HEAD
-=======
-/** Fires the jumpscare the moment the player is caught (ported from the Flutter build). */
+/** Fires the jumpscare when the player is caught. */
 function CaughtScare() {
   const phase = useGame((s) => s.phase);
   const [visible, setVisible] = useState(false);
@@ -50,12 +49,13 @@ function CaughtScare() {
   }, [phase]);
 
   if (!visible) return null;
+
   return <JumpscareOverlay onFinished={() => setVisible(false)} />;
 }
 
->>>>>>> origin/main
 export default function App() {
   const [ready, setReady] = useState(false);
+
   useEffect(() => {
     initStorage().then(() => {
       setReady(true);
@@ -67,13 +67,10 @@ export default function App() {
     <SafeAreaProvider>
       <SafeAreaView style={styles.root}>
         <StatusBar style="light" />
-        {/* Mounted once for the whole app so keyboard input survives screen changes between runs. */}
+        {/* Mounted once so keyboard input survives screen changes between runs. */}
         {ready && <TypingCapture />}
         <Screen />
-<<<<<<< HEAD
-=======
         <CaughtScare />
->>>>>>> origin/main
       </SafeAreaView>
     </SafeAreaProvider>
   );

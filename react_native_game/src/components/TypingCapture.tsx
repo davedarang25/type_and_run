@@ -5,11 +5,11 @@
 // whenever it loses focus — so the next game accepts letters without tapping the screen
 // (the bug that was fixed in the Flutter game).
 import { useEffect, useRef } from 'react';
-import { AppState, Platform, StyleSheet, TextInput, type TextInputInstance } from 'react-native';
+import { AppState, Platform, StyleSheet, TextInput } from 'react-native';
 import { gameStore, TYPING_PHASES, useGame } from '../store';
 
 export function TypingCapture() {
-  const input = useRef<TextInputInstance>(null);
+  const input = useRef<TextInput>(null);
   const phase = useGame((s) => s.phase);
   const promptShownAt = useGame((s) => s.prompt?.shownAt ?? 0);
   const holdFocus = phase !== 'auth'; // the sign-in form needs the keyboard
