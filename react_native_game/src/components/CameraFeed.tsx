@@ -211,22 +211,22 @@ export function CameraFeed({
       ]}
     >
       {/* The corridor the streamer is standing in. */}
-      <Image
-        source={PLATE[atmosphere] ?? PLATE.flickering}
-        resizeMode="cover"
-        style={[StyleSheet.absoluteFill, styles.plate]}
-      />
+        <Image
+          source={PLATE[atmosphere] ?? PLATE.flickering}
+          resizeMode="stretch"
+          style={[StyleSheet.absoluteFill, styles.plate]}
+        />
 
-      {/* The chase corridor appears when something starts running. */}
-      <Image
-        source={CHASE_PLATE}
-        resizeMode="cover"
-        style={[
-          StyleSheet.absoluteFill,
-          styles.plate,
-          { opacity: chasing ? 0.88 : 0 },
-        ]}
-      />
+        {/* The chase corridor appears when something starts running. */}
+        <Image
+          source={CHASE_PLATE}
+          resizeMode="stretch"
+          style={[
+            StyleSheet.absoluteFill,
+            styles.plate,
+            { opacity: chasing ? 0.88 : 0 },
+          ]}
+        />
 
       {/* World layer: moves with the walking camera. */}
       <View
@@ -238,7 +238,7 @@ export function CameraFeed({
               { translateX: pose.x },
               { translateY: pose.y },
               { rotate: `${pose.roll}rad` },
-              { scale: 1.12 },
+              { scale: 1 },
             ],
           },
         ]}

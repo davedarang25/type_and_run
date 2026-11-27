@@ -44,19 +44,21 @@ export function JumpscareOverlay({
   // sin/cos of the Flutter phase, sampled across the animation
   const translateX = progress.interpolate({
     inputRange: [0, 0.16, 0.32, 0.48, 0.64, 0.8, 1],
-    outputRange: [0, 12, -14, 9, -11, 6, 0],
+    outputRange: [0, 0, 0, 0, 0, 0, 0],
   });
+
   const translateY = progress.interpolate({
     inputRange: [0, 0.2, 0.36, 0.52, 0.68, 0.84, 1],
-    outputRange: [0, -10, 13, -8, 10, -5, 0],
+    outputRange: [0, 0, 0, 0, 0, 0, 0],
   });
+
   const rotate = progress.interpolate({
-    inputRange: [0, 0.25, 0.5, 0.75, 1],
-    outputRange: ['0deg', '2.5deg', '-2deg', '1.6deg', '0deg'],
+    inputRange: [0, 1],
+    outputRange: ['0deg', '0deg'],
   });
   const scale = progress.interpolate({
-    inputRange: [0, 0.4, 0.7, 1],
-    outputRange: [1.12, 1.26, 1.14, 1.2],
+    inputRange: [0, 1],
+    outputRange: [1, 1],
   });
   const blood = progress.interpolate({
     inputRange: [0, 0.5, 1],
@@ -72,7 +74,7 @@ export function JumpscareOverlay({
     <View style={styles.root} accessibilityRole="alert" accessibilityLabel="Caught">
       <Animated.Image
         source={SCARE}
-        resizeMode="cover"
+        resizeMode="contain"
         style={[StyleSheet.absoluteFill, { transform: [{ translateX }, { translateY }, { rotate }, { scale }] }]}
       />
       <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.blood, { opacity: blood }]} />

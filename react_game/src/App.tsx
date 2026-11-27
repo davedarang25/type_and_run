@@ -1,25 +1,27 @@
-<<<<<<< HEAD
-import { useEffect } from 'react';
-=======
+
 import { useEffect, useState } from 'react';
->>>>>>> origin/main
 import { gameStore, useGame } from './store/index.ts';
 import { MenuScreen } from './screens/MenuScreen.tsx';
 import { RunScreen } from './screens/RunScreen.tsx';
 import { ResultsScreen } from './screens/ResultsScreen.tsx';
 import { AuthScreen } from './screens/AuthScreen.tsx';
 import { TypingCapture } from './components/TypingCapture.tsx';
-<<<<<<< HEAD
-=======
-import { JumpscareOverlay, jumpscareFor } from './components/JumpscareOverlay.tsx';
->>>>>>> origin/main
+import {
+  JumpscareOverlay,
+  jumpscareFor,
+} from './components/JumpscareOverlay.tsx';
 
 function Screen() {
   const phase = useGame((s) => s.phase);
+
   switch (phase) {
     case 'boot':
     case 'loading':
-      return <div className="flex h-full items-center justify-center text-xs tracking-[0.3em] text-dim">CONNECTING TO STREAM…</div>;
+      return (
+        <div className="flex h-full items-center justify-center text-xs tracking-[0.3em] text-dim">
+          CONNECTING TO STREAM…
+        </div>
+      );
     case 'auth':
       return <AuthScreen />;
     case 'menu':
@@ -32,11 +34,9 @@ function Screen() {
   }
 }
 
-<<<<<<< HEAD
-=======
 /**
- * Fires the jumpscare the instant the player is caught (ported from the Flutter
- * build), then reveals the results screen underneath it.
+ * Fires the jumpscare when the player is caught,
+ * then reveals the results screen underneath it.
  */
 function CaughtScare() {
   const phase = useGame((s) => s.phase);
@@ -48,21 +48,26 @@ function CaughtScare() {
   }, [phase]);
 
   if (!visible) return null;
-  return <JumpscareOverlay imageSrc={jumpscareFor(result?.caughtBy)} onFinished={() => setVisible(false)} />;
+
+  return (
+    <JumpscareOverlay
+      imageSrc={jumpscareFor(result?.caughtBy)}
+      onFinished={() => setVisible(false)}
+    />
+  );
 }
 
->>>>>>> origin/main
 export default function App() {
-  useEffect(() => { void gameStore.getState().init(); }, []);
+  useEffect(() => {
+    void gameStore.getState().init();
+  }, []);
+
   return (
     <>
-      {/* Mounted once for the whole app, so keyboard input survives screen changes between runs. */}
+      {/* Mounted once so keyboard input survives screen changes between runs. */}
       <TypingCapture />
       <Screen />
-<<<<<<< HEAD
-=======
       <CaughtScare />
->>>>>>> origin/main
     </>
   );
 }
