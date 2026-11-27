@@ -1,0 +1,23 @@
+{
+  "name": "type-and-run",
+  "private": true,
+  "description": "Runs the backend and the React game together. Flutter: see flutter_game/README.md",
+  "scripts": {
+    "setup": "npm --prefix backend install && npm --prefix react_game install && npm --prefix react_native_game install",
+    "db:reset": "npm --prefix backend run db:reset",
+    "dev": "concurrently -k -n api,react -c magenta,cyan \"npm --prefix backend run dev\" \"npm --prefix react_game run dev\"",
+    "test": "npm --prefix backend test && npm --prefix react_game test && npm --prefix react_native_game test",
+    "native": "npm --prefix react_native_game start"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.3",
+    "babel-preset-expo": "~58.0.0",
+    "concurrently": "^9.2.5",
+    "vite": "^8.4.0"
+  },
+  "dependencies": {
+    "expo": "~58.0.0",
+    "expo-status-bar": "~58.0.5",
+    "react-native-safe-area-context": "^5.11.1"
+  }
+}
