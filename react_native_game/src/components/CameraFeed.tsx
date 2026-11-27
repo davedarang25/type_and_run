@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+<<<<<<< HEAD
 import { Animated, Easing, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+=======
+import { Animated, Easing, Image, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+>>>>>>> origin/main
 import Svg, { Line, Polygon, Rect } from 'react-native-svg';
 import {
   corridorShapes,
@@ -17,6 +21,18 @@ import { C } from '../theme';
 
 const TINT: Record<string, string> = { flickering: '#1a1810', misty: '#121820', sterile: '#0f1a18', flooded: '#0b1420' };
 
+<<<<<<< HEAD
+=======
+/** Realistic backrooms plates (photographic corridors behind the drawn one). */
+const PLATE: Record<string, number> = {
+  flickering: require('../../assets/backrooms/lobby.jpg'),
+  misty: require('../../assets/backrooms/warehouse.jpg'),
+  sterile: require('../../assets/backrooms/warehouse.jpg'),
+  flooded: require('../../assets/backrooms/poolrooms.jpg'),
+};
+const CHASE_PLATE = require('../../assets/backrooms/chase.jpg');
+
+>>>>>>> origin/main
 /**
  * The "camera" viewport, carried by a walking streamer:
  *   the world layer (corridor + ghost) bobs with every keystroke on a movement word,
@@ -93,6 +109,13 @@ export function CameraFeed({ proximity, chasing, atmosphere, children }: {
 
   return (
     <Animated.View onLayout={onLayout} style={[styles.feed, { backgroundColor: TINT[atmosphere] ?? '#15161b', borderColor }]}>
+<<<<<<< HEAD
+=======
+      {/* the corridor the streamer is standing in */}
+      <Image source={PLATE[atmosphere] ?? PLATE.flickering} resizeMode="cover" style={[StyleSheet.absoluteFill, styles.plate]} />
+      {/* the same corridor once something starts running */}
+      <Image source={CHASE_PLATE} resizeMode="cover" style={[StyleSheet.absoluteFill, styles.plate, { opacity: chasing ? 0.88 : 0 }]} />
+>>>>>>> origin/main
       {/* world layer: moves with the walking camera */}
       <View
         pointerEvents="none"
@@ -127,6 +150,10 @@ export function CameraFeed({ proximity, chasing, atmosphere, children }: {
 
 const styles = StyleSheet.create({
   feed: { borderWidth: 2, borderRadius: 12, overflow: 'hidden' },
+<<<<<<< HEAD
+=======
+  plate: { opacity: 0.95 },
+>>>>>>> origin/main
   apparition: { position: 'absolute', top: '14%', alignSelf: 'center', alignItems: 'center' },
   head: { width: 48, height: 58, borderRadius: 30, backgroundColor: 'rgba(220,225,230,0.35)' },
   body: { width: 110, height: 200, marginTop: 4, borderTopLeftRadius: 60, borderTopRightRadius: 60, borderBottomLeftRadius: 24, borderBottomRightRadius: 24, backgroundColor: 'rgba(200,205,215,0.18)' },

@@ -14,6 +14,18 @@ const _tints = {
   'flooded': Color(0xFF0B1420),
 };
 
+<<<<<<< HEAD
+=======
+/// Photographic backrooms plates drawn behind the corridor geometry.
+const _plates = {
+  'flickering': 'assets/images/backroom_level0.jpg',
+  'misty': 'assets/images/backroom_level1.jpg',
+  'sterile': 'assets/images/backroom_level1.jpg',
+  'flooded': 'assets/images/backroom_poolrooms.jpg',
+};
+const _chasePlate = 'assets/images/backroom_chase.jpg';
+
+>>>>>>> origin/main
 class CameraFeed extends StatefulWidget {
   const CameraFeed({
     super.key,
@@ -120,6 +132,26 @@ class _CameraFeedState extends State<CameraFeed> with TickerProviderStateMixin {
             ),
           ),
           child: Stack(children: [
+<<<<<<< HEAD
+=======
+            // Realistic backrooms plate: the corridor the streamer is standing in.
+            Positioned.fill(
+              child: Image.asset(
+                _plates[widget.atmosphere] ?? 'assets/images/backroom_level0.jpg',
+                fit: BoxFit.cover,
+                color: Colors.black.withValues(alpha: 0.22),
+                colorBlendMode: BlendMode.darken,
+              ),
+            ),
+            // The same corridor once something starts running.
+            Positioned.fill(
+              child: AnimatedOpacity(
+                opacity: widget.chasing ? 0.92 : 0.0,
+                duration: const Duration(milliseconds: 900),
+                child: Image.asset(_chasePlate, fit: BoxFit.cover),
+              ),
+            ),
+>>>>>>> origin/main
             Positioned.fill(
               child: IgnorePointer(
                 child: LayoutBuilder(builder: (context, box) {

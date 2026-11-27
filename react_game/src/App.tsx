@@ -1,10 +1,18 @@
+<<<<<<< HEAD
 import { useEffect } from 'react';
+=======
+import { useEffect, useState } from 'react';
+>>>>>>> origin/main
 import { gameStore, useGame } from './store/index.ts';
 import { MenuScreen } from './screens/MenuScreen.tsx';
 import { RunScreen } from './screens/RunScreen.tsx';
 import { ResultsScreen } from './screens/ResultsScreen.tsx';
 import { AuthScreen } from './screens/AuthScreen.tsx';
 import { TypingCapture } from './components/TypingCapture.tsx';
+<<<<<<< HEAD
+=======
+import { JumpscareOverlay, jumpscareFor } from './components/JumpscareOverlay.tsx';
+>>>>>>> origin/main
 
 function Screen() {
   const phase = useGame((s) => s.phase);
@@ -24,6 +32,26 @@ function Screen() {
   }
 }
 
+<<<<<<< HEAD
+=======
+/**
+ * Fires the jumpscare the instant the player is caught (ported from the Flutter
+ * build), then reveals the results screen underneath it.
+ */
+function CaughtScare() {
+  const phase = useGame((s) => s.phase);
+  const result = useGame((s) => s.result);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    setVisible(phase === 'gameover');
+  }, [phase]);
+
+  if (!visible) return null;
+  return <JumpscareOverlay imageSrc={jumpscareFor(result?.caughtBy)} onFinished={() => setVisible(false)} />;
+}
+
+>>>>>>> origin/main
 export default function App() {
   useEffect(() => { void gameStore.getState().init(); }, []);
   return (
@@ -31,6 +59,10 @@ export default function App() {
       {/* Mounted once for the whole app, so keyboard input survives screen changes between runs. */}
       <TypingCapture />
       <Screen />
+<<<<<<< HEAD
+=======
+      <CaughtScare />
+>>>>>>> origin/main
     </>
   );
 }

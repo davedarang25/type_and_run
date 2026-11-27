@@ -1,6 +1,19 @@
 import type { ReactNode } from 'react';
 
+<<<<<<< HEAD
 /** The "camera" viewport: grain, scanlines, vignette and an apparition that sharpens as proximity rises. */
+=======
+/** Realistic backrooms plates, one per atmosphere, drawn behind the corridor. */
+const PLATE: Record<string, string> = {
+  flickering: '/backrooms/lobby.jpg',
+  misty: '/backrooms/warehouse.jpg',
+  sterile: '/backrooms/warehouse.jpg',
+  flooded: '/backrooms/poolrooms.jpg',
+};
+const CHASE_PLATE = '/backrooms/chase.jpg';
+
+/** The "camera" viewport: backrooms plate, grain, scanlines, vignette and an apparition that sharpens as proximity rises. */
+>>>>>>> origin/main
 export function CameraFeed({ proximity, chasing, children, atmosphere }: {
   proximity: number;
   chasing: boolean;
@@ -16,10 +29,25 @@ export function CameraFeed({ proximity, chasing, children, atmosphere }: {
       className={`feed rounded-xl border border-bone/10 ${chasing ? 'chase-pulse' : ''}`}
       style={{ background: `radial-gradient(ellipse at 50% 30%, ${tint[atmosphere] ?? '#15161b'} 0%, #050506 75%)` }}
     >
+<<<<<<< HEAD
       <div className="grain" />
       {/* apparition */}
       <div
         className="apparition pointer-events-none absolute left-1/2 top-[8%] z-0 h-[75%] w-40"
+=======
+      {/* the corridor the streamer is standing in */}
+      <div className="feed-plate" aria-hidden="true">
+        <img src={PLATE[atmosphere] ?? PLATE.flickering} alt="" />
+      </div>
+      {/* the same corridor once something starts running */}
+      <div className="feed-plate feed-plate-chase" aria-hidden="true" style={{ opacity: chasing ? 0.9 : 0 }}>
+        <img src={CHASE_PLATE} alt="" />
+      </div>
+      <div className="grain" />
+      {/* apparition */}
+      <div
+        className="apparition pointer-events-none absolute left-1/2 top-[8%] z-[1] h-[75%] w-40"
+>>>>>>> origin/main
         style={{
           opacity: Math.max(0, p * 0.9 - 0.05),
           filter: `blur(${(1 - p) * 14 + 2}px)`,

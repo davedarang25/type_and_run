@@ -73,3 +73,80 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .grain, .flicker, .shake, .chase-pulse, .apparition, .rec { animation: none !important; }
 }
+<<<<<<< HEAD
+=======
+
+/* ------------------------------------------------------------------ */
+/* Backrooms plates: the realistic corridor behind the drawn feed      */
+/* ------------------------------------------------------------------ */
+.feed-plate {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+.feed-plate img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.08);
+  filter: saturate(0.82) contrast(1.06);
+  animation: plate-push 26s ease-in-out infinite alternate;
+}
+.feed-plate-chase {
+  transition: opacity 1.1s ease;
+}
+@keyframes plate-push {
+  from { transform: scale(1.04); }
+  to { transform: scale(1.16); }
+}
+
+/* ------------------------------------------------------------------ */
+/* Jumpscare overlay — ported from the Flutter build                   */
+/* ------------------------------------------------------------------ */
+.scare {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  overflow: hidden;
+  background: #07080a;
+}
+.scare-plate {
+  position: absolute;
+  inset: 0;
+}
+.scare-plate img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.scare-blood {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 18%, rgba(224, 49, 63, 0.85) 100%);
+}
+.scare-flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: #ffffff;
+}
+.scare-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 26px;
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: rgba(232, 228, 216, 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feed-plate img { animation: none; }
+}
+>>>>>>> origin/main

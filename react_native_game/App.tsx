@@ -5,6 +5,10 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { initStorage } from './src/lib/storage';
 import { gameStore, useGame } from './src/store';
 import { TypingCapture } from './src/components/TypingCapture';
+<<<<<<< HEAD
+=======
+import { JumpscareOverlay } from './src/components/JumpscareOverlay';
+>>>>>>> origin/main
 import { AuthScreen } from './src/screens/AuthScreen';
 import { MenuScreen } from './src/screens/MenuScreen';
 import { ResultsScreen } from './src/screens/ResultsScreen';
@@ -34,6 +38,22 @@ function Screen() {
   }
 }
 
+<<<<<<< HEAD
+=======
+/** Fires the jumpscare the moment the player is caught (ported from the Flutter build). */
+function CaughtScare() {
+  const phase = useGame((s) => s.phase);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    setVisible(phase === 'gameover');
+  }, [phase]);
+
+  if (!visible) return null;
+  return <JumpscareOverlay onFinished={() => setVisible(false)} />;
+}
+
+>>>>>>> origin/main
 export default function App() {
   const [ready, setReady] = useState(false);
   useEffect(() => {
@@ -50,6 +70,10 @@ export default function App() {
         {/* Mounted once for the whole app so keyboard input survives screen changes between runs. */}
         {ready && <TypingCapture />}
         <Screen />
+<<<<<<< HEAD
+=======
+        <CaughtScare />
+>>>>>>> origin/main
       </SafeAreaView>
     </SafeAreaProvider>
   );
